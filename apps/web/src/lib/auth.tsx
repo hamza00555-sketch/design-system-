@@ -17,7 +17,7 @@ export interface Workspace {
   systemId: string;
   plan: "free" | "pro";
   teamName: string;
-  role: "owner" | "member";
+  role: "owner" | "admin" | "member";
 }
 
 interface AuthState {

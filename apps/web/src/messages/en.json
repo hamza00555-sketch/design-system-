@@ -1,5 +1,8 @@
 {
-  "brand": { "name": "Tokenwell", "tagline": "Your design system, served to every AI agent." },
+  "brand": {
+    "name": "Tokenwell",
+    "tagline": "Your design system, served to every AI agent."
+  },
   "nav": {
     "dashboard": "Dashboard",
     "history": "History",
@@ -90,7 +93,37 @@
     "planFree": "Free — one system, one project, one person",
     "planPro": "Pro — unlimited projects and teammates",
     "comingSoon": "Coming in the next release.",
-    "supportBody": "Email us and a person answers."
+    "supportBody": "Email us and a person answers.",
+    "planLabelFree": "Free",
+    "planLabelPro": "Pro",
+    "seatsUsed": "{used} of {limit}",
+    "seatsUnlimited": "unlimited",
+    "projectsUsed": "Projects",
+    "seats": "People",
+    "upgrade": "Upgrade to Pro",
+    "upgrading": "Opening Stripe…",
+    "manage": "Manage subscription",
+    "priceLine": "$29/mo — unlimited projects, unlimited teammates.",
+    "cancelPending": "Cancels at the end of the current period. You keep everything until then.",
+    "checkoutDone": "Payment received. Your plan updates the moment Stripe confirms it.",
+    "checkoutCancelled": "Checkout cancelled — nothing was charged.",
+    "billingUnconfigured": "Billing is not set up on this deployment.",
+    "invite": "Invite",
+    "inviting": "Inviting…",
+    "invitePlaceholder": "teammate@company.com",
+    "roleMember": "Member",
+    "roleAdmin": "Admin",
+    "roleOwner": "Owner",
+    "pending": "Pending",
+    "remove": "Remove",
+    "revoke": "Revoke",
+    "inviteSent": "Invitation ready — send them this link.",
+    "inviteLink": "Invitation link",
+    "membersTitle": "People on this team",
+    "invitesTitle": "Pending invitations",
+    "noInvites": "No pending invitations.",
+    "seatLimitReached": "The free plan covers one person. Upgrade to invite teammates.",
+    "onlyManagers": "Only owners and admins can do that."
   },
   "tokens": {
     "color": "Color",
@@ -114,5 +147,16 @@
     "retry": "Try again",
     "close": "Close",
     "download": "Download"
+  },
+  "invite": {
+    "title": "Join {team}",
+    "body": "You have been invited to a design system on Tokenwell.",
+    "accept": "Accept invitation",
+    "accepting": "Joining…",
+    "signInFirst": "Sign in first, then this link will add you to the team.",
+    "accepted": "You are on the team. Taking you to the dashboard…",
+    "invalid": "That invitation is not valid.",
+    "expired": "That invitation has expired. Ask for a fresh one.",
+    "used": "That invitation has already been used."
   }
 }

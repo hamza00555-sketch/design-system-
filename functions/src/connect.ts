@@ -1,6 +1,7 @@
 import type { Firestore } from "firebase-admin/firestore";
 import { FieldValue } from "firebase-admin/firestore";
 import { generateProjectKey, hashKey, keyPrefixOf, normalizeConnectCode } from "./keys.js";
+import { checkProjectLimit, planOf, PLANS } from "./plans.js";
 
 export interface ConnectRequest {
   code: string;
@@ -15,7 +16,7 @@ export type ConnectResult =
 export type ConnectErrorCode = "invalid_token" | "expired" | "upgrade_required" | "bad_request";
 
 /** How many projects a free team may connect. Paying starts at the second. */
-export const FREE_PROJECT_LIMIT = 1;
+export const FREE_PROJECT_LIMIT = PLANS.free.projects;
 /** Connect codes are meant to be typed within a couple of minutes. */
 export const CONNECT_CODE_TTL_MS = 15 * 60 * 1000;
 
@@ -74,22 +75,14 @@ export async function redeemConnectCode(
   const systemId = data.systemId as string;
 
   const team = await db.collection("teams").doc(teamId).get();
-  const plan = team.get("plan") === "pro" ? "pro" : "free";
-  if (plan === "free") {
-    const existing = await db
-      .collection("projects")
-      .where("teamId", "==", teamId)
-      .limit(FREE_PROJECT_LIMIT + 1)
-      .get();
-    if (existing.size >= FREE_PROJECT_LIMIT) {
-      return {
-        ok: false,
-        status: 403,
-        error:
-          "The free plan covers one project. Upgrade to connect this repo as well.",
-        code: "upgrade_required",
-      };
-    }
+  const limit = await checkProjectLimit(db, teamId, planOf(team.get("plan")));
+  if (!limit.allowed) {
+    return {
+      ok: false,
+      status: 403,
+      error: "The free plan covers one project. Upgrade to connect this repo as well.",
+      code: "upgrade_required",
+    };
   }
 
   const apiKey = generateProjectKey();

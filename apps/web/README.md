@@ -31,7 +31,10 @@ Neither language is a translation layer over the other.
 | `/[locale]/dashboard/history/[versionId]` | one version, with export |
 | `/[locale]/onboarding/connect` | mints a connect code and shows the command |
 | `/[locale]/systems` | the team's system and the projects on it |
-| `/[locale]/settings/{billing,members,support}` | phase 3 fills these in |
+| `/[locale]/settings/billing` | plan, usage against the limits, Stripe checkout and portal |
+| `/[locale]/settings/members` | people, roles, invitations |
+| `/[locale]/settings/support` | how to reach a person |
+| `/[locale]/invite/[token]` | accepting an invitation |
 
 ## How it talks to the backend
 
@@ -39,7 +42,12 @@ Reads come straight from Firestore over the client SDK and stay live —
 `onSnapshot`, so a push from an agent updates the dashboard without a refresh.
 **Every write goes through the Cloud Function** in `functions/`, authenticated
 with a Firebase ID token: `/api/me/bootstrap`, `/api/connect-codes`,
-`/api/versions/restore`. The security rules make the client read-only, so there
+`/api/versions/restore`, `/api/members/*`, `/api/billing/*`. Stripe posts to
+`/api/stripe/webhook`, which authenticates by signature over the raw body
+rather than by a token.
+
+Two pages listen to the team document directly, so a plan change lands on the
+screen the moment Stripe's webhook is processed — no refresh, no polling. The security rules make the client read-only, so there
 is no privileged path through the browser.
 
 Export is the exception that needs no server at all: the version document

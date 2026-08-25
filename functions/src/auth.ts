@@ -32,12 +32,29 @@ export async function verifyCaller(
   }
 }
 
+export type Role = "owner" | "admin" | "member";
+
 /** Membership is the authorisation boundary for everything team-scoped. */
 export async function isMember(
   db: Firestore,
   teamId: string,
   uid: string,
 ): Promise<boolean> {
+  return (await memberRole(db, teamId, uid)) !== null;
+}
+
+export async function memberRole(
+  db: Firestore,
+  teamId: string,
+  uid: string,
+): Promise<Role | null> {
   const doc = await db.collection("teams").doc(teamId).collection("members").doc(uid).get();
-  return doc.exists;
+  if (!doc.exists) return null;
+  const role = doc.get("role");
+  return role === "owner" || role === "admin" ? role : "member";
+}
+
+/** Who may invite, remove, and pay: not every member. */
+export function canManageTeam(role: Role | null): boolean {
+  return role === "owner" || role === "admin";
 }

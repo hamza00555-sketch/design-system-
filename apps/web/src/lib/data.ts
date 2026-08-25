@@ -40,6 +40,21 @@ export interface VerificationDoc {
   createdAt: Date | null;
 }
 
+export interface MemberDoc {
+  id: string;
+  uid: string;
+  name: string | null;
+  email: string | null;
+  role: "owner" | "admin" | "member";
+}
+
+export interface InviteDoc {
+  id: string;
+  email: string;
+  role: "admin" | "member";
+  expiresAt: number;
+}
+
 export interface ProjectDoc {
   id: string;
   name: string;
@@ -182,6 +197,57 @@ export function useVerifications(systemId: string | null, max = 12) {
       : null,
     [],
     [systemId, max],
+  );
+}
+
+export function useMembers(teamId: string | null) {
+  return useLive<MemberDoc[]>(
+    teamId
+      ? (onData, onError) =>
+          onSnapshot(
+            collection(db(), "teams", teamId, "members"),
+            (snap) =>
+              onData(
+                snap.docs.map((d) => ({
+                  id: d.id,
+                  uid: (d.get("uid") as string) ?? d.id,
+                  name: (d.get("name") as string) ?? null,
+                  email: (d.get("email") as string) ?? null,
+                  role: (d.get("role") as MemberDoc["role"]) ?? "member",
+                })),
+              ),
+            (err) => onError(err.message),
+          )
+      : null,
+    [],
+    [teamId],
+  );
+}
+
+export function usePendingInvites(teamId: string | null) {
+  return useLive<InviteDoc[]>(
+    teamId
+      ? (onData, onError) =>
+          onSnapshot(
+            query(
+              collection(db(), "invites"),
+              where("teamId", "==", teamId),
+              where("status", "==", "pending"),
+            ),
+            (snap) =>
+              onData(
+                snap.docs.map((d) => ({
+                  id: d.id,
+                  email: (d.get("email") as string) ?? "",
+                  role: (d.get("role") as InviteDoc["role"]) ?? "member",
+                  expiresAt: (d.get("expiresAt") as number) ?? 0,
+                })),
+              ),
+            (err) => onError(err.message),
+          )
+      : null,
+    [],
+    [teamId],
   );
 }
 
