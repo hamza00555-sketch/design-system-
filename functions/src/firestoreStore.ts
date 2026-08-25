@@ -1,0 +1,144 @@
+import { countTokens, parseDesignSystem, type DesignSystem, type SystemDiff, type VerifyResult } from "@tokenwell/core";
+import type { ProjectContext, Store, StoredSystem, VersionRef } from "@tokenwell/mcp";
+import type { Firestore } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
+import { hashKey } from "./keys.js";
+
+/**
+ * Firestore layout
+ *
+ *   teams/{teamId}                        name, plan, ownerUid
+ *   teams/{teamId}/members/{uid}          role, email
+ *   systems/{systemId}                    teamId, name, currentVersionId, versionCount
+ *   systems/{systemId}/versions/{id}      n, system, source, summary, createdAt  (immutable)
+ *   projects/{projectId}                  teamId, systemId, name, repoName, keyPrefix
+ *   projectKeys/{sha256(key)}             projectId                              (O(1) auth)
+ *   connectCodes/{code}                   teamId, systemId, expiresAt, usedAt
+ *   verifications/{id}                    projectId, passed, violationCount
+ */
+export class FirestoreStore implements Store {
+  constructor(private readonly db: Firestore) {}
+
+  async resolveKey(key: string): Promise<ProjectContext | null> {
+    const keyDoc = await this.db.collection("projectKeys").doc(hashKey(key)).get();
+    if (!keyDoc.exists) return null;
+    const projectId = keyDoc.get("projectId") as string;
+
+    const project = await this.db.collection("projects").doc(projectId).get();
+    if (!project.exists) return null;
+    const teamId = project.get("teamId") as string;
+
+    const team = await this.db.collection("teams").doc(teamId).get();
+    return {
+      projectId,
+      teamId,
+      systemId: project.get("systemId") as string,
+      projectName: (project.get("name") as string) ?? projectId,
+      plan: ((team.get("plan") as string) === "pro" ? "pro" : "free"),
+    };
+  }
+
+  private versions(systemId: string) {
+    return this.db.collection("systems").doc(systemId).collection("versions");
+  }
+
+  async getCurrent(ctx: ProjectContext): Promise<StoredSystem | null> {
+    const system = await this.db.collection("systems").doc(ctx.systemId).get();
+    const currentVersionId = system.get("currentVersionId") as string | undefined;
+    if (!currentVersionId) return null;
+    return this.getVersion(ctx, currentVersionId);
+  }
+
+  async getVersion(ctx: ProjectContext, versionId: string): Promise<StoredSystem | null> {
+    const doc = await this.versions(ctx.systemId).doc(versionId).get();
+    if (!doc.exists) return null;
+    return toStored(doc.id, doc.data()!);
+  }
+
+  async listVersions(ctx: ProjectContext, limit: number): Promise<VersionRef[]> {
+    const snap = await this.versions(ctx.systemId).orderBy("n", "desc").limit(limit).get();
+    return snap.docs.map((doc) => {
+      const { system, ...ref } = toStored(doc.id, doc.data());
+      return ref;
+    });
+  }
+
+  async pushVersion(
+    ctx: ProjectContext,
+    system: DesignSystem,
+    diff: SystemDiff,
+  ): Promise<VersionRef> {
+    const systemRef = this.db.collection("systems").doc(ctx.systemId);
+    return this.db.runTransaction(async (tx) => {
+      const current = await tx.get(systemRef);
+      const n = ((current.get("versionCount") as number | undefined) ?? 0) + 1;
+      const versionRef = systemRef.collection("versions").doc();
+      const payload = {
+        n,
+        system,
+        source: system.meta.source,
+        summary: diff.summary,
+        tokenCount: countTokens(system),
+        createdAt: new Date().toISOString(),
+        createdByProject: ctx.projectId,
+      };
+      tx.set(versionRef, payload);
+      tx.set(
+        systemRef,
+        {
+          teamId: ctx.teamId,
+          name: system.meta.name,
+          currentVersionId: versionRef.id,
+          versionCount: n,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      return { versionId: versionRef.id, ...payload, system: undefined } as unknown as VersionRef;
+    });
+  }
+
+  async restoreVersion(ctx: ProjectContext, versionId: string): Promise<VersionRef> {
+    const target = await this.getVersion(ctx, versionId);
+    if (!target) throw new Error(`No version ${versionId}`);
+    return this.pushVersion(ctx, target.system, {
+      added: [],
+      removed: [],
+      changed: [],
+      identical: false,
+      summary: `restored v${target.n}`,
+    });
+  }
+
+  async recordVerification(ctx: ProjectContext, result: VerifyResult): Promise<void> {
+    await this.db.collection("verifications").add({
+      projectId: ctx.projectId,
+      teamId: ctx.teamId,
+      systemId: ctx.systemId,
+      passed: result.pass,
+      violationCount: result.violations.length,
+      summary: result.summary,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+  }
+
+  async touchProject(ctx: ProjectContext): Promise<void> {
+    await this.db
+      .collection("projects")
+      .doc(ctx.projectId)
+      .set({ lastSeenAt: FieldValue.serverTimestamp() }, { merge: true });
+  }
+}
+
+function toStored(versionId: string, data: FirebaseFirestore.DocumentData): StoredSystem {
+  const system = parseDesignSystem(data.system);
+  return {
+    versionId,
+    n: data.n as number,
+    createdAt: (data.createdAt as string) ?? "",
+    source: system.meta.source,
+    summary: (data.summary as string) ?? "",
+    tokenCount: (data.tokenCount as number) ?? countTokens(system),
+    system,
+  };
+}

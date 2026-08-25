@@ -1,0 +1,18 @@
+{
+  "name": "@tokenwell/mcp",
+  "version": "0.1.0",
+  "description": "MCP tools that serve a design system to coding agents.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": "./dist/index.js" },
+  "files": ["dist"],
+  "engines": { "node": ">=20" },
+  "scripts": { "build": "tsup", "test": "vitest run" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@tokenwell/core": "workspace:*",
+    "zod": "^4.1.5"
+  }
+}
