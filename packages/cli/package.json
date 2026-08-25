@@ -1,0 +1,18 @@
+{
+  "name": "tokenwell",
+  "version": "0.1.0",
+  "description": "Serve your design system to every AI agent on every project.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "tokenwell": "dist/cli.js" },
+  "files": ["dist"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsup",
+    "prepack": "pnpm build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "commander": "^14.0.3"
+  }
+}

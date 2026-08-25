@@ -102,7 +102,37 @@ const TW_FONT_WEIGHT = /\bfont-\[(\d{2,3})\]/g;
 const COLOR_LITERAL =
   /#[0-9a-fA-F]{3,8}\b|(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\([^()]*\)/g;
 
-const DECLARATION = /(^|[;{"'`\s])([a-z-]{3,30})\s*:\s*([^;{}"'`\n]+)/g;
+// Matches both `font-size: 15px` and React's `fontSize: "15px"` — agents write
+// the two interchangeably, often in the same file.
+const DECLARATION = /(^|[;{"'`,\s])([a-zA-Z-]{3,30})\s*:\s*([^;{}\n]+)/g;
+
+/**
+ * Trim a captured declaration down to its own value.
+ *
+ * CSS ends a declaration at `;`, a JS object at `,` — but a comma also sits
+ * inside `rgb(0, 0, 0)`, so depth has to be tracked rather than split on.
+ */
+function sliceValue(raw: string): string {
+  const text = raw.trim();
+  const quote = text[0];
+  if (quote === '"' || quote === "'" || quote === "`") {
+    const close = text.indexOf(quote, 1);
+    return close === -1 ? text.slice(1) : text.slice(1, close);
+  }
+  let depth = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === "(") depth++;
+    else if (ch === ")") depth--;
+    else if (ch === "," && depth === 0) return text.slice(0, i).trim();
+  }
+  return text;
+}
+
+/** `borderRadius` and `border-radius` are the same property. */
+function normalizeProperty(raw: string): string {
+  return raw.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+}
 
 /** A colour literal that is only part of a longer word (an id, a hash) is noise. */
 function isStandaloneHex(source: string, index: number, value: string): boolean {
@@ -173,13 +203,20 @@ export function extractCandidates(content: string): Candidate[] {
   const at = (index: number) => lineOf(lineStarts, index);
   const out: Candidate[] = [];
 
-  // 1. CSS-style declarations (also catches JSX style objects written as
-  //    `style={{ padding: "14px" }}`? No — those use `:` too, so yes.)
-  for (const m of masked.matchAll(DECLARATION)) {
-    const property = m[2]!.toLowerCase();
-    const raw = m[3]!.trim();
-    const line = at(m.index! + m[1]!.length);
-    if (isNeutral(raw)) continue;
+  // 1. Declarations, in CSS or in a JS style object. The value capture is
+  //    greedy to the end of the line, so lastIndex is rewound to just past the
+  //    value we actually used — otherwise the first declaration on a line
+  //    would swallow the rest of them.
+  DECLARATION.lastIndex = 0;
+  for (let m = DECLARATION.exec(masked); m !== null; m = DECLARATION.exec(masked)) {
+    const property = normalizeProperty(m[2]!);
+    const group = m[3]!;
+    const raw = sliceValue(group);
+    const valueStart = m.index + m[0].length - group.length;
+    const consumed = valueStart + Math.max(group.indexOf(raw), 0) + raw.length;
+    if (consumed > valueStart) DECLARATION.lastIndex = consumed;
+    const line = at(valueStart);
+    if (raw === "" || isNeutral(raw)) continue;
     if (COLOR_PROPS.has(property)) {
       for (const c of raw.matchAll(COLOR_LITERAL)) {
         out.push({ kind: "color", value: c[0]!, property, line });

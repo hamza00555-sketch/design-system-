@@ -120,3 +120,29 @@ describe("extraction", () => {
     ]);
   });
 });
+
+describe("React inline styles", () => {
+  it("checks camelCase properties the same as CSS ones", () => {
+    const result = check(`<div style={{ fontSize: "15px", borderRadius: "7px" }} />`);
+    expect(result.violations.map((v) => v.kind).sort()).toEqual(["fontSize", "radius"]);
+  });
+
+  it("passes camelCase properties that sit on the scales", () => {
+    const result = check(
+      `<div style={{ fontSize: "16px", borderRadius: "8px", paddingLeft: "24px" }} />`,
+    );
+    expect(result.pass).toBe(true);
+    expect(result.summary.type).toBe(1);
+    expect(result.summary.spacing).toBe(1);
+  });
+
+  it("catches an off-brand backgroundColor", () => {
+    const result = check(`<div style={{ backgroundColor: "#3D7BF2" }} />`);
+    expect(result.violations[0]?.tokenPath).toBe("color.primary");
+  });
+
+  it("does not mistake ordinary object keys for style", () => {
+    const result = check(`const props = { name: "acme", count: 14, id: "x-14" };`);
+    expect(result.pass).toBe(true);
+  });
+});
