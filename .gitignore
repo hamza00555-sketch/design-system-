@@ -1,0 +1,26 @@
+node_modules/
+dist/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# local env / secrets
+.env
+.env.local
+.env.*.local
+serviceAccountKey.json
+
+# firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# editors / os
+.DS_Store
+.idea/
+.vscode/
+
+# tokenwell: these hold a project API key — never commit them
+.mcp.json
+.cursor/mcp.json
