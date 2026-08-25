@@ -2,18 +2,17 @@
 
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { AppShell } from "@/components/AppShell";
+import { OnboardingShell } from "@/components/OnboardingShell";
+import { Link } from "@/i18n/navigation";
 import { Copyable } from "@/components/Copyable";
 import { ApiError, callApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
-const EXTRACT_PROMPT = `Read this repository's shipped styling and extract its real design system: the colours, type, spacing, radii, and the usage rules the code already follows. Name tokens for their role, not their appearance. Collapse near-duplicate values into one token. Then call the \`push_design_system\` tool on the \`tokenwell\` MCP server with the result.`;
-
 export default function ConnectPage() {
   return (
-    <AppShell>
+    <OnboardingShell step={2}>
       <Connect />
-    </AppShell>
+    </OnboardingShell>
   );
 }
 
@@ -24,6 +23,7 @@ interface Minted {
 
 function Connect() {
   const t = useTranslations("connect");
+  const tOnboarding = useTranslations("onboarding");
   const { workspace } = useAuth();
   const [minted, setMinted] = useState<Minted | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +68,7 @@ function Connect() {
   const expired = Boolean(minted) && remaining === 0;
 
   return (
-    <div className="flex max-w-2xl flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <header>
         <h1 className="text-2xl font-medium tracking-tight">{t("title")}</h1>
         <p className="mt-1.5 text-sm text-muted">{t("body")}</p>
@@ -112,11 +112,12 @@ function Connect() {
         </ul>
       </section>
 
-      <section>
-        <h2 className="mb-1 text-sm font-medium text-muted">{t("promptTitle")}</h2>
-        <p className="mb-3 text-sm text-muted">{t("promptBody")}</p>
-        <Copyable value={EXTRACT_PROMPT} />
-      </section>
+      <Link
+        href="/onboarding/prompt"
+        className="self-start rounded-md border border-line-strong px-4 py-2 text-sm transition hover:bg-raised"
+      >
+        {tOnboarding("next")}
+      </Link>
     </div>
   );
 }

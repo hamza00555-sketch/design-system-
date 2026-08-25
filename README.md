@@ -51,19 +51,39 @@ generation against it before you ever see the result.
 packages/core   schema, verification engine, exporters   (no I/O, fully tested)
 packages/mcp    the MCP tools, over a Store interface
 packages/cli    the npm package: init · whoami · extract-prompt
-functions/      Firebase Cloud Functions: POST /mcp and /api/cli/connect
-apps/web/       dashboard and marketing site (phase two)
+functions/      Firebase Cloud Functions: the API, the MCP endpoint, billing
+apps/web/       the site and dashboard, in Arabic and English
 scripts/        local dev server — no emulator, no Java
 ```
+
+### Teams and billing
+
+The free plan is one design system, one project, one person. Paying starts at
+the second project or the second teammate. A pending invitation holds a seat,
+so the refusal lands on the person doing the inviting rather than on whoever
+arrives last.
+
+Stripe drives the plan through signed webhooks — checkout succeeding is not the
+event that matters. `past_due` keeps the paid features on, because a failed
+card is a card problem, not a downgrade.
 
 ### Working on it
 
 ```bash
 pnpm install
-pnpm test                     # 77 tests, no network needed
+pnpm test                     # 105 tests, no network needed
 pnpm build                    # build every package
 
 node scripts/dev-server.mjs   # the API, in memory, on :8787
+```
+
+For the full stack — auth, Firestore, billing webhooks — run the emulators
+instead, and see `apps/web/README.md` for the web app's environment:
+
+```bash
+pnpm --filter @tokenwell/functions build
+npx firebase emulators:start --project demo-tokenwell --only auth,firestore,functions
+pnpm --filter @tokenwell/web dev
 ```
 
 Then, in any repo:
@@ -75,10 +95,13 @@ TOKENWELL_API_BASE=http://localhost:8787 \
 
 ### Deploying
 
+See [DEPLOY.md](DEPLOY.md) for the full runbook: Firebase, Stripe, the web app,
+and publishing the CLI — with the pre-launch checklist.
+
 ```bash
 firebase use <your-project>
 pnpm --filter @tokenwell/functions build
-firebase deploy --only functions,firestore:rules
+firebase deploy --only functions,firestore:rules,firestore:indexes
 ```
 
 Firestore holds teams, systems, immutable versions, projects, and connect
@@ -122,9 +145,10 @@ only as a SHA-256 hash.
 
 ### الحالة الحالية
 
-المرحلة الأولى (المحرك) مكتملة: الـ CLI وخادم MCP ومحرك التحقق والتصدير وطبقة
-Firebase. المرحلة الثانية هي الداشبورد وموقع التسويق — وسيكونان **ثنائيَّي اللغة
-(عربي/إنجليزي) مع دعم كامل لاتجاه RTL** كما هو موضح في `apps/web/README.md`.
+المشروع مكتمل بمراحله الأربع: المحرك (الـ CLI وخادم MCP والتحقق والتصدير)،
+والداشبورد، والفرق والفوترة عبر Stripe، وموقع التسويق وتدفّق الإعداد. الموقع
+**ثنائي اللغة (عربي/إنجليزي) مع دعم كامل لاتجاه RTL** — التفاصيل في
+`apps/web/README.md`، وخطوات النشر في [DEPLOY.md](DEPLOY.md).
 
 </div>
 

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The web app and the functions both compile against the packages' dist,
+      # so they have to be built before anything is typechecked.
+      - run: pnpm build
+
+      - run: pnpm test
+
+      - name: Typecheck every package
+        run: pnpm -r exec tsc --noEmit
+
+      - name: Build the web app
+        run: pnpm --filter @tokenwell/web build
+
+      - name: Check the published CLI contents
+        run: pnpm --filter tokenwell exec npm pack --dry-run

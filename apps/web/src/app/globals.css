@@ -23,8 +23,14 @@
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 }
 
+/*
+ * Dark mode redefines the variables on :root rather than opening a second
+ * @theme block. Tailwind hoists @theme to the top level regardless of the
+ * media query around it, so a nested one is not conditional at all — it simply
+ * wins, and every visitor gets dark.
+ */
 @media (prefers-color-scheme: dark) {
-  @theme {
+  :root {
     --color-canvas: #0c0c0c;
     --color-surface: #131313;
     --color-raised: #1a1a1a;

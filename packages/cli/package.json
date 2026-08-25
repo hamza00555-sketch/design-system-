@@ -4,9 +4,17 @@
   "description": "Serve your design system to every AI agent on every project.",
   "license": "MIT",
   "type": "module",
-  "bin": { "tokenwell": "dist/cli.js" },
-  "files": ["dist"],
-  "engines": { "node": ">=20" },
+  "bin": {
+    "tokenwell": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsup",
     "prepack": "pnpm build",
@@ -14,5 +22,26 @@
   },
   "dependencies": {
     "commander": "^14.0.3"
+  },
+  "keywords": [
+    "design system",
+    "design tokens",
+    "mcp",
+    "ai agents",
+    "claude code",
+    "cursor",
+    "design review"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamza00555-sketch/design-system-.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/hamza00555-sketch/design-system-#readme",
+  "bugs": {
+    "url": "https://github.com/hamza00555-sketch/design-system-/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

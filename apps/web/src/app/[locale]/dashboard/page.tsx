@@ -114,7 +114,7 @@ function EmptyState() {
           </li>
         ))}
       </ol>
-      <LinkButton href="/onboarding/connect">{t("cta")}</LinkButton>
+      <LinkButton href="/onboarding/extract">{t("cta")}</LinkButton>
     </div>
   );
 }
