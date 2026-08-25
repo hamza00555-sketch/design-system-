@@ -93,8 +93,13 @@ export async function pushDesignSystem(
 export async function listVersions(store: Store, ctx: ProjectContext): Promise<string> {
   const versions = await store.listVersions(ctx, 20);
   if (versions.length === 0) return NO_SYSTEM;
+  // The id is printed because restore_version needs it — a list an agent
+  // cannot act on is not a list.
   return versions
-    .map((v) => `v${v.n} · ${v.createdAt} · ${v.tokenCount} tokens · ${v.summary}`)
+    .map(
+      (v) =>
+        `v${v.n} · ${v.createdAt} · ${v.tokenCount} tokens · ${v.summary} · id=${v.versionId}`,
+    )
     .join("\n");
 }
 

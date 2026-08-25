@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/*
+ * Our own interface stays black, white, and grey on purpose: the only
+ * opinionated colours on screen should belong to the customer's design system.
+ */
+@theme {
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-raised: #fafafa;
+  --color-ink: #111111;
+  --color-muted: #6b6b6b;
+  --color-faint: #9b9b9b;
+  --color-line: #e6e6e6;
+  --color-line-strong: #d0d0d0;
+  --color-pass: #1f7a4d;
+  --color-fail: #a32b3a;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-arabic: "SF Arabic", "Noto Sans Arabic", "IBM Plex Sans Arabic",
+    "Segoe UI", Tahoma, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-canvas: #0c0c0c;
+    --color-surface: #131313;
+    --color-raised: #1a1a1a;
+    --color-ink: #f2f2f2;
+    --color-muted: #a0a0a0;
+    --color-faint: #6f6f6f;
+    --color-line: #262626;
+    --color-line-strong: #383838;
+    --color-pass: #4ec38a;
+    --color-fail: #e2707f;
+  }
+}
+
+html {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Arabic needs more room to breathe than Latin at the same size — the same
+ * line-height that reads comfortably in English crowds the descenders and
+ * diacritics here.
+ */
+html[dir="rtl"] {
+  font-family: var(--font-arabic);
+  line-height: 1.85;
+}
+
+html[dir="rtl"] code,
+html[dir="rtl"] pre {
+  font-family: var(--font-mono);
+  line-height: 1.6;
+}
+
+/* Terminal commands and token values read left-to-right in any locale. */
+.ltr-content {
+  direction: ltr;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+::selection {
+  background: var(--color-ink);
+  color: var(--color-canvas);
+}

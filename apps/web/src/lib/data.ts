@@ -1,0 +1,210 @@
+"use client";
+
+import { parseDesignSystem, type DesignSystem } from "@tokenwell/core";
+import {
+  collection,
+  doc,
+  limit as fsLimit,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+  type DocumentData,
+} from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "./firebase";
+
+export interface VersionDoc {
+  id: string;
+  n: number;
+  source: string;
+  summary: string;
+  tokenCount: number;
+  createdAt: string;
+  system: DesignSystem;
+}
+
+export interface SystemDoc {
+  id: string;
+  name: string;
+  teamId: string;
+  currentVersionId: string | null;
+  versionCount: number;
+}
+
+export interface VerificationDoc {
+  id: string;
+  projectId: string;
+  passed: boolean;
+  violationCount: number;
+  createdAt: Date | null;
+}
+
+export interface ProjectDoc {
+  id: string;
+  name: string;
+  repoName: string | null;
+  keyPrefix: string;
+  lastSeenAt: Date | null;
+}
+
+/** Firestore hands back Timestamps; the UI only ever wants a Date or null. */
+function toDate(value: unknown): Date | null {
+  if (value && typeof value === "object" && "toDate" in value) {
+    return (value as { toDate: () => Date }).toDate();
+  }
+  return null;
+}
+
+interface Live<T> {
+  data: T;
+  loading: boolean;
+  error: string | null;
+}
+
+function useLive<T>(
+  subscribe: ((onData: (value: T) => void, onError: (message: string) => void) => () => void) | null,
+  initial: T,
+  deps: unknown[],
+): Live<T> {
+  const [state, setState] = useState<Live<T>>({ data: initial, loading: true, error: null });
+
+  useEffect(() => {
+    if (!subscribe) {
+      setState({ data: initial, loading: false, error: null });
+      return;
+    }
+    return subscribe(
+      (value) => setState({ data: value, loading: false, error: null }),
+      (message) => setState((prev) => ({ ...prev, loading: false, error: message })),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return state;
+}
+
+export function useSystem(systemId: string | null) {
+  return useLive<SystemDoc | null>(
+    systemId
+      ? (onData, onError) =>
+          onSnapshot(
+            doc(db(), "systems", systemId),
+            (snap) =>
+              onData(
+                snap.exists()
+                  ? {
+                      id: snap.id,
+                      name: (snap.get("name") as string) ?? "Design system",
+                      teamId: snap.get("teamId") as string,
+                      currentVersionId: (snap.get("currentVersionId") as string) ?? null,
+                      versionCount: (snap.get("versionCount") as number) ?? 0,
+                    }
+                  : null,
+              ),
+            (err) => onError(err.message),
+          )
+      : null,
+    null,
+    [systemId],
+  );
+}
+
+function toVersion(id: string, data: DocumentData): VersionDoc {
+  return {
+    id,
+    n: (data.n as number) ?? 0,
+    source: (data.source as string) ?? "code",
+    summary: (data.summary as string) ?? "",
+    tokenCount: (data.tokenCount as number) ?? 0,
+    createdAt: (data.createdAt as string) ?? "",
+    system: parseDesignSystem(data.system),
+  };
+}
+
+export function useVersions(systemId: string | null, max = 50) {
+  return useLive<VersionDoc[]>(
+    systemId
+      ? (onData, onError) =>
+          onSnapshot(
+            query(
+              collection(db(), "systems", systemId, "versions"),
+              orderBy("n", "desc"),
+              fsLimit(max),
+            ),
+            (snap) => onData(snap.docs.map((d) => toVersion(d.id, d.data()))),
+            (err) => onError(err.message),
+          )
+      : null,
+    [],
+    [systemId, max],
+  );
+}
+
+export function useVersion(systemId: string | null, versionId: string | null) {
+  return useLive<VersionDoc | null>(
+    systemId && versionId
+      ? (onData, onError) =>
+          onSnapshot(
+            doc(db(), "systems", systemId, "versions", versionId),
+            (snap) => onData(snap.exists() ? toVersion(snap.id, snap.data()) : null),
+            (err) => onError(err.message),
+          )
+      : null,
+    null,
+    [systemId, versionId],
+  );
+}
+
+export function useVerifications(systemId: string | null, max = 12) {
+  return useLive<VerificationDoc[]>(
+    systemId
+      ? (onData, onError) =>
+          onSnapshot(
+            query(
+              collection(db(), "verifications"),
+              where("systemId", "==", systemId),
+              orderBy("createdAt", "desc"),
+              fsLimit(max),
+            ),
+            (snap) =>
+              onData(
+                snap.docs.map((d) => ({
+                  id: d.id,
+                  projectId: d.get("projectId") as string,
+                  passed: Boolean(d.get("passed")),
+                  violationCount: (d.get("violationCount") as number) ?? 0,
+                  createdAt: toDate(d.get("createdAt")),
+                })),
+              ),
+            (err) => onError(err.message),
+          )
+      : null,
+    [],
+    [systemId, max],
+  );
+}
+
+export function useProjects(teamId: string | null) {
+  return useLive<ProjectDoc[]>(
+    teamId
+      ? (onData, onError) =>
+          onSnapshot(
+            query(collection(db(), "projects"), where("teamId", "==", teamId)),
+            (snap) =>
+              onData(
+                snap.docs.map((d) => ({
+                  id: d.id,
+                  name: (d.get("name") as string) ?? d.id,
+                  repoName: (d.get("repoName") as string) ?? null,
+                  keyPrefix: (d.get("keyPrefix") as string) ?? "",
+                  lastSeenAt: toDate(d.get("lastSeenAt")),
+                })),
+              ),
+            (err) => onError(err.message),
+          )
+      : null,
+    [],
+    [teamId],
+  );
+}

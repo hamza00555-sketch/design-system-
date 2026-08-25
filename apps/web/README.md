@@ -1,48 +1,64 @@
-# apps/web — dashboard and marketing site (phase two)
+# apps/web — the dashboard
 
-Not built yet. This file records the decisions already made, so phase two
-starts from a brief rather than a blank page.
+Next.js 16 (App Router) + Firebase Auth + Firestore, in Arabic and English.
 
 ## Language: Arabic and English, both first-class
 
-The site ships bilingual. This is a structural requirement, not a translation
-pass bolted on later:
+Neither language is a translation layer over the other.
 
-- Locale-prefixed routes (`/ar/...`, `/en/...`) with `next-intl`, and `<html
-  lang dir>` set per locale.
-- **Every layout must work in RTL.** Use logical CSS properties throughout
-  (`padding-inline-start`, `margin-inline`, `inset-inline-start`) — never
-  `left`/`right`. Tailwind's `ps-*`/`pe-*`/`ms-*`/`me-*` utilities, never
-  `pl-*`/`pr-*`.
-- No copy hardcoded in components; all strings come from message catalogues so
-  neither language is the afterthought.
-- Numerals, dates, and currency through `Intl`, per locale.
-- The Arabic side gets its own typographic scale — Arabic text needs more line
-  height than Latin at the same size.
+- Locale-prefixed routes (`/en/...`, `/ar/...`) via `next-intl`, with `<html
+  lang dir>` set per locale in `src/app/[locale]/layout.tsx`.
+- **Every layout works in RTL.** Logical CSS properties throughout — Tailwind's
+  `ps-*`/`pe-*`/`ms-*`/`me-*`, never `pl-*`/`pr-*`, never `left`/`right`.
+- No copy hardcoded in components; every string comes from
+  `src/messages/{en,ar}.json`. The two files carry identical key sets.
+- Arabic gets more line height than Latin at the same size (`globals.css`),
+  because the same leading that reads well in English crowds Arabic.
+- Anything that is read as code — a shell command, a hex value, a token name —
+  is wrapped in `.ltr-content`, which isolates its direction. `#2f6bff` reads
+  the same way in every language.
+- Numbers, dates, and plurals go through `next-intl`'s `Intl` formatters.
+  Arabic plural rules have six categories; the catalogue spells them out.
 
 ## Routes
 
-```
-/                                  marketing
-/use-cases/design-review
-/use-cases/design-system-storage
-/pricing · /privacy · /terms
-/sign-in · /sign-up                Firebase Auth (Google + GitHub)
-/onboarding/{extract,prompt,connect,result,upgrade}
-/dashboard                         current system, live verification receipts
-/dashboard/history                 versions
-/dashboard/history/[versionId]     one version, with restore
-/systems                           every system on the team
-/settings/{billing,members,support}
+| Route | What it does |
+| --- | --- |
+| `/[locale]` | redirects to the dashboard (marketing lands here in phase 4) |
+| `/[locale]/sign-in` | Google and GitHub, no passwords |
+| `/[locale]/dashboard` | current system, live verification receipts, exports |
+| `/[locale]/dashboard/history` | every version, with restore |
+| `/[locale]/dashboard/history/[versionId]` | one version, with export |
+| `/[locale]/onboarding/connect` | mints a connect code and shows the command |
+| `/[locale]/systems` | the team's system and the projects on it |
+| `/[locale]/settings/{billing,members,support}` | phase 3 fills these in |
+
+## How it talks to the backend
+
+Reads come straight from Firestore over the client SDK and stay live —
+`onSnapshot`, so a push from an agent updates the dashboard without a refresh.
+**Every write goes through the Cloud Function** in `functions/`, authenticated
+with a Firebase ID token: `/api/me/bootstrap`, `/api/connect-codes`,
+`/api/versions/restore`. The security rules make the client read-only, so there
+is no privileged path through the browser.
+
+Export is the exception that needs no server at all: the version document
+already holds the whole system, so `DESIGN.md` and the W3C tokens JSON are
+generated in the browser from `@tokenwell/core`.
+
+## Running it locally
+
+```bash
+cp apps/web/.env.example apps/web/.env.local   # then fill it in
+pnpm --filter @tokenwell/functions build
+npx firebase emulators:start --project demo-tokenwell --only auth,firestore,functions
+pnpm --filter @tokenwell/web dev
 ```
 
-## Notes
+For the emulators, `.env.local` wants the demo values and
+`NEXT_PUBLIC_FIREBASE_EMULATORS=1`; the API base is
+`http://127.0.0.1:5001/demo-tokenwell/us-central1/api`.
 
-- Data comes from Firestore with the client SDK, read-only — every write goes
-  through the Cloud Functions in `functions/`.
-- The connect screen mints a code (15-minute TTL, single use) and shows
-  `npx tokenwell init --code XXXX-XXXX`.
-- Billing is Stripe, per team, monthly. The free plan is one system, one
-  project, one person.
-- Keep the interface neutral — black, white, and grey — so the only opinionated
-  colours on screen belong to the customer's design system.
+One caveat if you are running inside a sandbox that intercepts TLS:
+`signInWithPopup` loads `apis.google.com`, so the popup will hang there even
+though every other part of the stack works against the emulators.

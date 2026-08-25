@@ -1,0 +1,118 @@
+{
+  "brand": { "name": "Tokenwell", "tagline": "Your design system, served to every AI agent." },
+  "nav": {
+    "dashboard": "Dashboard",
+    "history": "History",
+    "systems": "Systems",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "language": "العربية"
+  },
+  "auth": {
+    "title": "Welcome back",
+    "subtitle": "Your design system is where you left it.",
+    "google": "Continue with Google",
+    "github": "Continue with GitHub",
+    "note": "No passwords. We never see one.",
+    "failed": "Sign-in failed. Try again.",
+    "loading": "Signing you in…",
+    "required": "Sign in to see your design system."
+  },
+  "dashboard": {
+    "greeting": "Welcome back",
+    "current": "Current system",
+    "version": "v{n}",
+    "tokenCount": "{count, plural, one {# token} other {# tokens}}",
+    "updated": "Updated {date}",
+    "connectProject": "Connect another project",
+    "viewHistory": "Version history",
+    "exportMd": "Export DESIGN.md",
+    "exportJson": "Export tokens JSON",
+    "recentChecks": "Recent verifications",
+    "noChecks": "No generations verified yet. They appear here the moment an agent checks its work.",
+    "checkPassed": "passed",
+    "checkFailed": "{count, plural, one {# off-brand value} other {# off-brand values}}"
+  },
+  "empty": {
+    "title": "No design system yet",
+    "body": "Connect a repo, then paste the extraction prompt into your agent. It reads your shipped styling and pushes the real system here.",
+    "step1": "Connect this repo",
+    "step2": "Paste the prompt into your agent",
+    "step3": "Your system appears here, token by token",
+    "cta": "Connect a project"
+  },
+  "connect": {
+    "title": "Connect a project",
+    "body": "Run this in the repo you want on-brand. The code works once and expires in 15 minutes.",
+    "minting": "Minting a code…",
+    "expiresIn": "Expires in {minutes}m {seconds}s",
+    "expired": "This code has expired.",
+    "newCode": "Mint a new code",
+    "copy": "Copy",
+    "copied": "Copied",
+    "cursorNote": "Add --cursor to write Cursor's config too.",
+    "afterTitle": "What init writes",
+    "after1": ".mcp.json — your agent's connection (gitignored; it holds the key)",
+    "after2": "CLAUDE.md and AGENTS.md — the rules block, between markers",
+    "after3": ".tokenwell.json — the project id, never the key",
+    "promptTitle": "Then build your system",
+    "promptBody": "Paste this prompt into your agent inside that repo.",
+    "upgradeRequired": "The free plan covers one project. Upgrade to connect another."
+  },
+  "history": {
+    "title": "Version history",
+    "subtitle": "Every push is a version. Nothing is overwritten.",
+    "current": "Current",
+    "restore": "Restore",
+    "restoring": "Restoring…",
+    "restored": "Restored as v{n}",
+    "empty": "No versions yet.",
+    "added": "{count} added",
+    "removed": "{count} removed",
+    "changed": "{count} changed",
+    "source": "from {source}",
+    "backToHistory": "Back to history",
+    "versionTitle": "Version {n}"
+  },
+  "systems": {
+    "title": "Systems",
+    "subtitle": "Every design system on this team.",
+    "projects": "{count, plural, one {# project} other {# projects}}",
+    "lastSeen": "Last agent call {date}",
+    "never": "no agent calls yet"
+  },
+  "settings": {
+    "title": "Settings",
+    "billing": "Billing",
+    "members": "Members",
+    "support": "Support",
+    "plan": "Plan",
+    "planFree": "Free — one system, one project, one person",
+    "planPro": "Pro — unlimited projects and teammates",
+    "comingSoon": "Coming in the next release.",
+    "supportBody": "Email us and a person answers."
+  },
+  "tokens": {
+    "color": "Color",
+    "spacing": "Spacing",
+    "radius": "Radius",
+    "shadow": "Shadow",
+    "border": "Border",
+    "families": "Font family",
+    "sizes": "Font size",
+    "weights": "Font weight",
+    "lineHeights": "Line height",
+    "letterSpacing": "Letter spacing",
+    "components": "Components",
+    "rules": "Rules",
+    "must": "Must",
+    "should": "Should"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong.",
+    "retry": "Try again",
+    "close": "Close",
+    "download": "Download"
+  }
+}

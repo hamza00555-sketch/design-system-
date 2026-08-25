@@ -116,6 +116,13 @@ describe("history and export", () => {
     expect(await listVersions(store, ctx)).toContain("v3");
   });
 
+  it("prints the id restore_version needs", async () => {
+    await pushDesignSystem(store, ctx, clearGlass);
+    const listing = await listVersions(store, ctx);
+    expect(listing).toContain("id=v1");
+    expect(await restoreVersion(store, ctx, "v1")).toContain("Restored v1");
+  });
+
   it("exports both formats", async () => {
     await pushDesignSystem(store, ctx, clearGlass);
     expect(await exportSystem(store, ctx, "design-md")).toContain("# Clear Glass");
