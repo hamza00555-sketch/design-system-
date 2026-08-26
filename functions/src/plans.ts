@@ -10,7 +10,20 @@ export interface PlanLimits {
 }
 
 /**
- * Where the free plan stops and paying starts.
+ * Billing is off by default: every team gets everything, and the plan machinery
+ * below sits dormant. Set BILLING_ENABLED=1 to turn the free-plan limits and
+ * the Stripe upgrade path back on — nothing else has to change.
+ *
+ * The limits are kept rather than deleted because "open for now" is a business
+ * decision that reverses, and rebuilding seat counting the second time is the
+ * same work as the first.
+ */
+export function billingEnabled(): boolean {
+  return process.env.BILLING_ENABLED === "1";
+}
+
+/**
+ * Where the free plan stops and paying starts, once billing is on.
  *
  * One system, one project, one person: enough to prove the thing on a real
  * repo. Paying starts where the pain does — the second project or the second
@@ -54,11 +67,18 @@ export interface LimitCheck {
   limit: number;
 }
 
+const UNLIMITED: LimitCheck = {
+  allowed: true,
+  used: 0,
+  limit: Number.POSITIVE_INFINITY,
+};
+
 export async function checkProjectLimit(
   db: Firestore,
   teamId: string,
   plan: Plan,
 ): Promise<LimitCheck> {
+  if (!billingEnabled()) return UNLIMITED;
   const limit = PLANS[plan].projects;
   if (limit === Number.POSITIVE_INFINITY) return { allowed: true, used: 0, limit };
   const used = await countProjects(db, teamId);
@@ -70,6 +90,7 @@ export async function checkSeatLimit(
   teamId: string,
   plan: Plan,
 ): Promise<LimitCheck> {
+  if (!billingEnabled()) return UNLIMITED;
   const limit = PLANS[plan].seats;
   if (limit === Number.POSITIVE_INFINITY) return { allowed: true, used: 0, limit };
   const used = await countSeats(db, teamId);

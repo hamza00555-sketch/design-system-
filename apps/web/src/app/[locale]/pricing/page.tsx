@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { PricingCard } from "@/components/PricingCard";
+import { BILLING_ENABLED } from "@/lib/billing";
 import { Section, SiteShell } from "@/components/SiteShell";
 
 export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -19,10 +20,10 @@ function Pricing() {
     <>
       <section className="py-16">
         <h1 className="max-w-2xl text-3xl leading-tight font-medium tracking-tight">
-          {t("pricing.title")}
+          {BILLING_ENABLED ? t("pricing.title") : t("pricing.openTitle")}
         </h1>
         <div className="mt-8 max-w-xl">
-          <PricingCard />
+          {BILLING_ENABLED ? <PricingCard /> : <p className="text-muted">{t("pricing.openBody")}</p>}
         </div>
       </section>
       <Section title={t("faq.title")}>

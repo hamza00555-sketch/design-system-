@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from "react";
 import { SettingsShell } from "@/components/SettingsShell";
 import { ApiError, callApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { BILLING_ENABLED } from "@/lib/billing";
 import { useMembers, usePendingInvites, useProjects } from "@/lib/data";
 import { db } from "@/lib/firebase";
 
@@ -44,7 +45,9 @@ export default function BillingPage() {
   }, [workspace]);
 
   const [plan, setPlan] = useState<"free" | "pro">(workspace?.plan ?? "free");
-  const isPro = plan === "pro";
+  // With billing off nobody is on a lesser plan, so the whole page reads as
+  // open rather than as a free tier waiting to be upgraded.
+  const isPro = !BILLING_ENABLED || plan === "pro";
 
   const go = async (which: "checkout" | "portal") => {
     if (!workspace) return;
@@ -70,22 +73,28 @@ export default function BillingPage() {
 
   const seatsUsed = members.data.length + invites.data.length;
   const limit = (value: number) => (isPro ? t("seatsUnlimited") : String(value));
+  const planLine = !BILLING_ENABLED ? t("planOpen") : isPro ? t("planPro") : t("planFree");
+  const planTag = !BILLING_ENABLED
+    ? t("planLabelOpen")
+    : isPro
+      ? t("planLabelPro")
+      : t("planLabelFree");
 
   return (
     <SettingsShell>
       <div className="flex max-w-lg flex-col gap-6">
-        <Suspense fallback={null}>
-          <CheckoutNotice />
-        </Suspense>
+        {BILLING_ENABLED ? (
+          <Suspense fallback={null}>
+            <CheckoutNotice />
+          </Suspense>
+        ) : null}
 
         <section>
           <h2 className="mb-3 text-sm font-medium text-muted">{t("plan")}</h2>
           <div className="rounded-lg border border-line">
             <div className="flex items-baseline justify-between gap-3 border-b border-line px-4 py-3">
-              <span className="text-sm">{isPro ? t("planPro") : t("planFree")}</span>
-              <span className="font-mono text-xs text-faint">
-                {isPro ? t("planLabelPro") : t("planLabelFree")}
-              </span>
+              <span className="text-sm">{planLine}</span>
+              <span className="font-mono text-xs text-faint">{planTag}</span>
             </div>
             <dl className="divide-y divide-line text-sm">
               <Row
@@ -101,12 +110,13 @@ export default function BillingPage() {
               />
             </dl>
           </div>
-          {billing.cancelAtPeriodEnd ? (
+          {BILLING_ENABLED && billing.cancelAtPeriodEnd ? (
             <p className="mt-2 text-xs text-muted">{t("cancelPending")}</p>
           ) : null}
+          {!BILLING_ENABLED ? <p className="mt-2 text-xs text-muted">{t("openBody")}</p> : null}
         </section>
 
-        <section className="flex flex-col gap-2">
+        <section className={BILLING_ENABLED ? "flex flex-col gap-2" : "hidden"}>
           {isPro || billing.hasCustomer ? (
             <button
               type="button"

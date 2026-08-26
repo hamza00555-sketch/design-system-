@@ -123,7 +123,10 @@
     "invitesTitle": "Pending invitations",
     "noInvites": "No pending invitations.",
     "seatLimitReached": "The free plan covers one person. Upgrade to invite teammates.",
-    "onlyManagers": "Only owners and admins can do that."
+    "onlyManagers": "Only owners and admins can do that.",
+    "planOpen": "Open — everything on, nothing to pay",
+    "planLabelOpen": "Open",
+    "openBody": "Unlimited projects, unlimited teammates, unlimited generations. Billing is switched off on this deployment."
   },
   "tokens": {
     "color": "Color",
@@ -211,7 +214,10 @@
       "f4": "Version history and restore",
       "f5": "Export anytime — it is yours",
       "cta": "Set up my design system",
-      "free": "Free: one design system, one project, one person — unlimited generations."
+      "free": "Free: one design system, one project, one person — unlimited generations.",
+      "openTitle": "Free while it is being built.",
+      "openBody": "Unlimited projects, unlimited teammates, unlimited generations — no card, no plan to choose. Pricing arrives later; nothing you build now gets taken away when it does.",
+      "openCta": "Set up my design system"
     },
     "faq": {
       "title": "Fair questions",

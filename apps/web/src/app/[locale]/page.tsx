@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Cards, Receipt, Section, SiteShell, Steps } from "@/components/SiteShell";
 import { Link } from "@/i18n/navigation";
 import { PricingCard } from "@/components/PricingCard";
+import { BILLING_ENABLED } from "@/lib/billing";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -62,7 +63,7 @@ function Landing() {
         />
       </Section>
 
-      <Section title={t("pricing.title")}>
+      <Section title={BILLING_ENABLED ? t("pricing.title") : t("pricing.openTitle")}>
         <PricingCard />
       </Section>
 

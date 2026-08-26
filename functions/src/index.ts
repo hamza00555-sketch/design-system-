@@ -17,6 +17,7 @@ interface Response {
 }
 import { canManageTeam, memberRole, verifyCaller, type Caller } from "./auth.js";
 import { applyStripeEvent, stripeGateway } from "./billing.js";
+import { billingEnabled } from "./plans.js";
 import { redeemConnectCode } from "./connect.js";
 import { mintConnectCode } from "./connectCodes.js";
 import { FirestoreStore } from "./firestoreStore.js";
@@ -179,6 +180,9 @@ function respond(res: Response, result: Outcome, okStatus: number): void {
 }
 
 function billing() {
+  // Off by default. Keys alone do not open the upgrade path — BILLING_ENABLED
+  // does, so a stray key in an environment cannot start charging anyone.
+  if (!billingEnabled()) return null;
   const key = STRIPE_SECRET_KEY.value() || process.env.STRIPE_SECRET_KEY || "";
   const price = STRIPE_PRICE_ID.value() || process.env.STRIPE_PRICE_ID || "";
   const secret = STRIPE_WEBHOOK_SECRET.value() || process.env.STRIPE_WEBHOOK_SECRET || "";

@@ -1,85 +1,200 @@
 # Deploying Tokenwell
 
-Three things ship separately: the Cloud Functions (the API and the MCP
-endpoint), the web app, and the CLI on npm. Nothing here needs the others to be
-deployed first, except that the CLI's default endpoint has to match wherever
-the functions ended up.
+Two things ship: **Firebase** (the API, the MCP endpoint, the database and its
+rules) and **Vercel** (the web app). The CLI on npm is a third, optional step.
 
-## 1. Firebase — the API and the MCP endpoint
+Do Firebase first — Vercel needs the function URL that Firebase prints.
+
+---
+
+## 0. Billing is off by default
+
+This deployment is **open**: unlimited projects, unlimited teammates,
+unlimited generations, no card, no plan to choose. The plan machinery is
+present but dormant, so turning it on later is one environment variable on each
+side and nothing else:
+
+```
+BILLING_ENABLED=1                 # functions/.env
+NEXT_PUBLIC_BILLING_ENABLED=1     # Vercel
+```
+
+Leave both unset for now. With billing off, `/api/billing/*` refuses even if
+Stripe keys are present — a stray key in an environment cannot start charging
+anyone — and the site advertises no price.
+
+Skip section 3 entirely until you want to charge.
+
+---
+
+## 1. Firebase — API, MCP endpoint, database rules
+
+### 1.1 Create the project
 
 ```bash
+npm i -g firebase-tools          # or use npx firebase
 firebase login
-firebase use --add                    # pick or create the project
+firebase projects:create tokenwell-prod        # or create it in the console
 ```
 
-Set the billing secrets (they live in Secret Manager, never in the repo):
+Point the repo at it. `.firebaserc` currently holds the emulator project:
 
 ```bash
-firebase functions:secrets:set STRIPE_SECRET_KEY
-firebase functions:secrets:set STRIPE_WEBHOOK_SECRET
+firebase use --add               # pick tokenwell-prod, call the alias "prod"
 ```
 
-Non-secret config goes in `functions/.env`:
+Cloud Functions need the **Blaze** (pay-as-you-go) plan. At this traffic it
+costs approximately nothing, but the project will not deploy functions without
+it: console → ⚙ → Usage and billing → Modify plan.
 
-```
-STRIPE_PRICE_ID=price_...          # the $29/mo recurring price
-APP_URL=https://your-web-app        # where Stripe returns people after checkout
-```
+### 1.2 Turn on sign-in
 
-Then:
+Console → **Authentication** → Get started → Sign-in method:
+
+- Enable **Google**.
+- Enable **GitHub**. It asks for a Client ID and secret: create an OAuth App at
+  <https://github.com/settings/developers>, and paste Firebase's callback URL
+  (`https://<project>.firebaseapp.com/__/auth/handler`) into the GitHub app's
+  *Authorization callback URL*.
+
+Then Authentication → Settings → **Authorised domains** → add your Vercel
+domain (both `your-app.vercel.app` and any custom domain). Sign-in fails with
+`auth/unauthorized-domain` until you do.
+
+### 1.3 Create the database
+
+Console → **Firestore Database** → Create database → production mode → pick a
+region close to your users. Leave the default rules; you are about to replace
+them.
+
+### 1.4 Deploy the rules, the indexes, and the functions
+
+The rules are the security boundary — they make the browser read-only, scope
+every read to the caller's team, and make `projectKeys` and `connectCodes`
+unreadable to any client. Deploy them **before or with** the functions, never
+after:
 
 ```bash
+pnpm install
 pnpm --filter @tokenwell/functions build
-firebase deploy --only functions,firestore:rules,firestore:indexes
+
+# Rules and indexes on their own first — cheap, instant, and the safe order.
+firebase deploy --only firestore:rules,firestore:indexes
+
+# Then the API.
+firebase deploy --only functions
 ```
 
-The deploy prints the function URL. That URL is the API base everything else
-points at:
+`firestore.indexes.json` carries three indexes the app needs (recent
+verifications, pending invitations, and the collection-group lookup that finds
+which team you belong to). Firestore builds them in the background; queries
+that need them fail until the build finishes, which takes a minute or two on an
+empty database.
+
+To check what the rules will do before shipping them, use the console's Rules
+Playground (Firestore → Rules → Playground): a read of
+`projectKeys/{anything}` as an authenticated user must be **denied**.
+
+The deploy prints the function URL. Copy it — everything else points at it:
 
 ```
-https://us-central1-<project>.cloudfunctions.net/api
+https://us-central1-tokenwell-prod.cloudfunctions.net/api
 ```
 
-Enable **Google** and **GitHub** as sign-in providers in the Firebase console
-(Authentication → Sign-in method), and add the web app's domain under
-Authentication → Settings → Authorised domains.
-
-## 2. Stripe
-
-- Create a recurring product at $29/mo and copy its price id into
-  `STRIPE_PRICE_ID`.
-- Add a webhook endpoint pointing at `<API base>/api/stripe/webhook`, and
-  subscribe it to `checkout.session.completed`,
-  `customer.subscription.updated`, and `customer.subscription.deleted`.
-- Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
-
-The webhook is what actually changes a plan. Checkout succeeding is not the
-event that matters — the signed webhook is.
-
-## 3. The web app
-
-Any host that runs Next.js works; the app is static apart from the invitation
-and version pages. Set these environment variables:
-
-```
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_TOKENWELL_API_BASE=https://us-central1-<project>.cloudfunctions.net/api
-```
-
-Leave `NEXT_PUBLIC_FIREBASE_EMULATORS` unset in production.
+Sanity check:
 
 ```bash
-pnpm --filter @tokenwell/web build
+curl https://us-central1-tokenwell-prod.cloudfunctions.net/api/api/health
+# {"ok":true,"service":"tokenwell"}
 ```
+
+### 1.5 Web app config
+
+Console → ⚙ Project settings → Your apps → **Add app** → Web. Copy the config
+values; Vercel wants four of them in the next section.
+
+---
+
+## 2. Vercel — the web app
+
+The repo is a pnpm monorepo and the app is not at the root, so the project
+settings matter more than usual.
+
+### 2.1 Import
+
+<https://vercel.com/new> → import `hamza00555-sketch/design-system-`.
+
+| Setting | Value |
+| --- | --- |
+| Framework preset | Next.js |
+| **Root directory** | `apps/web` |
+| Build command | leave default (`next build`) |
+| Install command | leave default — Vercel detects pnpm from the lockfile |
+| Node version | 22 (Project Settings → General) |
+
+**Root directory is the one that bites.** Set it to `apps/web` and tick
+"Include files outside the root directory" so the workspace packages
+(`packages/core`) are available to the build.
+
+### 2.2 Environment variables
+
+Project Settings → Environment Variables. Add these to **Production**,
+**Preview**, and **Development**:
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=            # from 1.5
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=        # <project>.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=         # tokenwell-prod
+NEXT_PUBLIC_FIREBASE_APP_ID=             # 1:...:web:...
+NEXT_PUBLIC_TOKENWELL_API_BASE=https://us-central1-tokenwell-prod.cloudfunctions.net/api
+```
+
+Leave `NEXT_PUBLIC_FIREBASE_EMULATORS` and `NEXT_PUBLIC_BILLING_ENABLED` unset.
+
+These are `NEXT_PUBLIC_`, meaning they are baked into the browser bundle and
+are readable by anyone. That is correct for Firebase web config — it is an
+identifier, not a secret; the rules are what protect the data. Never put a
+Stripe secret key or a service-account key in a `NEXT_PUBLIC_` variable.
+
+### 2.3 Deploy
+
+Push to the branch, or hit Deploy. Then, once you know the domain:
+
+1. Add it to Firebase → Authentication → Authorised domains (section 1.2).
+2. Redeploy is not needed for that — it is a Firebase-side allowlist.
+
+### 2.4 Custom domain
+
+Vercel → Project → Settings → Domains → add `tokenwell.design`. Vercel prints
+the DNS records; add them at your registrar. Then add the custom domain to the
+Firebase authorised domains list too.
+
+---
+
+## 3. Stripe — only when you want to charge
+
+Skipped while billing is off. When the time comes:
+
+- Create a recurring product and copy its price id.
+- `functions/.env`: `STRIPE_PRICE_ID=price_...`, `APP_URL=https://your-domain`,
+  `BILLING_ENABLED=1`.
+- `firebase functions:secrets:set STRIPE_SECRET_KEY`
+- Add a webhook at `<API base>/api/stripe/webhook` subscribed to
+  `checkout.session.completed`, `customer.subscription.updated`, and
+  `customer.subscription.deleted`; copy its signing secret into
+  `firebase functions:secrets:set STRIPE_WEBHOOK_SECRET`.
+- Set `NEXT_PUBLIC_BILLING_ENABLED=1` on Vercel and redeploy.
+
+The signed webhook is what changes a plan. Checkout succeeding is not the event
+that matters.
+
+---
 
 ## 4. The CLI on npm
 
 `packages/cli/src/config.ts` carries the default API base. Point it at your
-deployment before publishing — a published CLI that talks to the wrong host is
-the one mistake here that reaches other people's machines.
+deployment before publishing — a published CLI talking to the wrong host is the
+one mistake here that reaches other people's machines.
 
 ```bash
 pnpm --filter tokenwell exec npm pack --dry-run   # 6 files, no source, no keys
@@ -92,29 +207,32 @@ Anyone can override it without a republish:
 TOKENWELL_API_BASE=https://your-api npx tokenwell init
 ```
 
+---
+
 ## 5. Check it end to end
 
-Against the real deployment, in a scratch repo:
+In a scratch repo, against the real deployment:
 
 ```bash
-npx tokenwell init --code <code from the dashboard>
+npx tokenwell init --code <code from the dashboard's Connect screen>
 ```
 
-Then in an agent session in that repo: ask for something visual, and confirm it
-calls `get_design_system` first and `verify` after. Push a deliberate `#3D7BF2`
-and check that verify names `color.primary`.
+Then in an agent session in that repo, ask for something visual. Confirm it
+calls `get_design_system` first and `verify` after. Write a deliberate
+`#3D7BF2` and check that verify names your `color.primary`.
 
-## Before launch
+---
 
-- [ ] `firestore.rules` deployed — the client must be read-only.
-- [ ] Authorised domains include the production web domain.
-- [ ] Stripe is in live mode, and the webhook secret is the live one.
-- [ ] `APP_URL` matches the deployed web app, or checkout returns people
-      to the wrong place.
+## Before you tell anyone about it
+
+- [ ] `firestore.rules` deployed — the Rules Playground denies a client read of
+      `projectKeys`.
+- [ ] Authorised domains include the production domain, or nobody can sign in.
+- [ ] `/api/health` answers on the deployed function URL.
 - [ ] The legal pages in `apps/web/src/content/legal.ts` have a real operating
       entity, a real governing law, and a lawyer's read. They ship with a
       visible draft banner until then.
-- [ ] Decide what happens on the free plan when a team's subscription lapses
-      with two projects connected. Today the limit is only checked at connect
-      time, so both keep working — that is a deliberate grace, not an
-      oversight, but it should be a decision someone made on purpose.
+- [ ] Decide what happens to teams that connected many projects while billing
+      was off, if you later turn it on. Today the limit is only checked at
+      connect time, so everything already connected keeps working — that is a
+      deliberate grace, but it should be a decision someone made on purpose.

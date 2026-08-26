@@ -6,6 +6,7 @@ import { OnboardingShell } from "@/components/OnboardingShell";
 import { TokenGrid } from "@/components/TokenGrid";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
+import { BILLING_ENABLED } from "@/lib/billing";
 import { useSystem, useVersion } from "@/lib/data";
 
 export default function ResultPage() {
@@ -36,12 +37,14 @@ export default function ResultPage() {
         >
           {t("resultCta")}
         </Link>
-        <Link
-          href="/onboarding/upgrade"
-          className="rounded-md px-4 py-2 text-sm text-muted transition hover:bg-raised hover:text-ink"
-        >
-          {t("next")}
-        </Link>
+        {BILLING_ENABLED ? (
+          <Link
+            href="/onboarding/upgrade"
+            className="rounded-md px-4 py-2 text-sm text-muted transition hover:bg-raised hover:text-ink"
+          >
+            {t("next")}
+          </Link>
+        ) : null}
       </div>
 
       {current.data ? <TokenGrid system={current.data.system} /> : null}

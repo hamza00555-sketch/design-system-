@@ -1,8 +1,26 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { BILLING_ENABLED } from "@/lib/billing";
 
 export function PricingCard() {
   const t = useTranslations("site.pricing");
+
+  // Nothing is for sale while billing is off, so the page says that plainly
+  // rather than advertising a price no one can pay.
+  if (!BILLING_ENABLED) {
+    return (
+      <div className="rounded-lg border border-line p-6">
+        <h3 className="text-lg font-medium tracking-tight">{t("openTitle")}</h3>
+        <p className="mt-2 max-w-xl text-sm text-muted">{t("openBody")}</p>
+        <Link
+          href="/sign-in"
+          className="mt-6 inline-block rounded-md border border-line-strong px-4 py-2 text-sm transition hover:bg-raised"
+        >
+          {t("openCta")}
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

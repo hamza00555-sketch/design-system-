@@ -1,5 +1,5 @@
 import type { Firestore } from "firebase-admin/firestore";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { CONNECT_CODE_TTL_MS, redeemConnectCode } from "../src/connect.js";
 import { generateConnectCode, generateProjectKey, hashKey, normalizeConnectCode } from "../src/keys.js";
 import { FakeFirestore } from "./fakeFirestore.js";
@@ -72,6 +72,14 @@ describe("redeeming a connect code", () => {
 });
 
 describe("plan limits", () => {
+  // Limits only exist when billing is on; the deployment default is open.
+  beforeEach(() => {
+    process.env.BILLING_ENABLED = "1";
+  });
+  afterEach(() => {
+    delete process.env.BILLING_ENABLED;
+  });
+
   it("stops a free team at its second project", async () => {
     fake.seedProject("p1", "t1");
     expect(await connect("ABCD2345")).toMatchObject({
@@ -79,6 +87,13 @@ describe("plan limits", () => {
       code: "upgrade_required",
       status: 403,
     });
+  });
+
+  it("lets a free team connect as many repos as it likes while billing is off", async () => {
+    delete process.env.BILLING_ENABLED;
+    fake.seedProject("p1", "t1");
+    fake.seedProject("p2", "t1");
+    expect((await connect("ABCD2345")).ok).toBe(true);
   });
 
   it("lets a paid team connect as many repos as it likes", async () => {

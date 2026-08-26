@@ -1,5 +1,5 @@
 import type { Firestore } from "firebase-admin/firestore";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Caller } from "../src/auth.js";
 import { acceptInvite, inviteMember, INVITE_TTL_MS, removeMember, revokeInvite } from "../src/invites.js";
 import { countSeats } from "../src/plans.js";
@@ -65,6 +65,13 @@ describe("inviting", () => {
 });
 
 describe("seats", () => {
+  beforeEach(() => {
+    process.env.BILLING_ENABLED = "1";
+  });
+  afterEach(() => {
+    delete process.env.BILLING_ENABLED;
+  });
+
   it("counts a pending invitation as a seat", async () => {
     expect(await countSeats(db, "t1")).toBe(1);
     await invite("new@acme.com");
@@ -78,6 +85,12 @@ describe("seats", () => {
       code: "upgrade_required",
       status: 403,
     });
+  });
+
+  it("lets a free team invite anyone while billing is off", async () => {
+    delete process.env.BILLING_ENABLED;
+    fake.data.set("teams/t1", { plan: "free", name: "Acme", ownerUid: "u_owner" });
+    expect((await invite("new@acme.com")).ok).toBe(true);
   });
 
   it("frees the seat again when an invitation is revoked", async () => {

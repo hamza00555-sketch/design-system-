@@ -58,14 +58,20 @@ scripts/        local dev server — no emulator, no Java
 
 ### Teams and billing
 
-The free plan is one design system, one project, one person. Paying starts at
-the second project or the second teammate. A pending invitation holds a seat,
-so the refusal lands on the person doing the inviting rather than on whoever
-arrives last.
+**Billing is off by default.** The deployment is open: unlimited projects,
+teammates, and generations, with no plan to choose. The limits and the Stripe
+path are present but dormant — `BILLING_ENABLED=1` on the functions and
+`NEXT_PUBLIC_BILLING_ENABLED=1` on the web app turn them on, and nothing else
+changes. They are kept rather than deleted because "open for now" is a decision
+that reverses, and rebuilding seat counting the second time is the same work as
+the first.
 
-Stripe drives the plan through signed webhooks — checkout succeeding is not the
-event that matters. `past_due` keeps the paid features on, because a failed
-card is a card problem, not a downgrade.
+With billing on: one design system, one project, one person on free; paying
+starts at the second project or the second teammate. A pending invitation holds
+a seat, so the refusal lands on the person doing the inviting rather than on
+whoever arrives last. Stripe drives the plan through signed webhooks —
+checkout succeeding is not the event that matters — and `past_due` keeps the
+paid features on, because a failed card is a card problem, not a downgrade.
 
 ### Working on it
 
@@ -95,13 +101,15 @@ TOKENWELL_API_BASE=http://localhost:8787 \
 
 ### Deploying
 
-See [DEPLOY.md](DEPLOY.md) for the full runbook: Firebase, Stripe, the web app,
-and publishing the CLI — with the pre-launch checklist.
+Firebase for the API and the database rules, Vercel for the web app. The full
+runbook — including which Vercel root directory to set and why the Firestore
+rules go out before the functions — is in [DEPLOY.md](DEPLOY.md).
 
 ```bash
 firebase use <your-project>
 pnpm --filter @tokenwell/functions build
-firebase deploy --only functions,firestore:rules,firestore:indexes
+firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only functions
 ```
 
 Firestore holds teams, systems, immutable versions, projects, and connect
@@ -146,9 +154,12 @@ only as a SHA-256 hash.
 ### الحالة الحالية
 
 المشروع مكتمل بمراحله الأربع: المحرك (الـ CLI وخادم MCP والتحقق والتصدير)،
-والداشبورد، والفرق والفوترة عبر Stripe، وموقع التسويق وتدفّق الإعداد. الموقع
-**ثنائي اللغة (عربي/إنجليزي) مع دعم كامل لاتجاه RTL** — التفاصيل في
-`apps/web/README.md`، وخطوات النشر في [DEPLOY.md](DEPLOY.md).
+والداشبورد، والفرق والفوترة، وموقع التسويق وتدفّق الإعداد. الموقع **ثنائي اللغة
+(عربي/إنجليزي) مع دعم كامل لاتجاه RTL** — التفاصيل في `apps/web/README.md`.
+
+**الفوترة مُطفأة افتراضيًا**: النشر مفتوح — مشاريع وأعضاء وتوليدات بلا حدود، وبلا
+خطة تختارها. وآلية الخطط موجودة لكنها نائمة، يوقظها متغيّر بيئة واحد على كل جانب.
+وخطوات النشر (Firebase و Vercel) في [DEPLOY.md](DEPLOY.md).
 
 </div>
 
