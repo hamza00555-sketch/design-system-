@@ -3,13 +3,11 @@
 import { countTokens } from "@miswadah/core";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import { Copyable } from "@/components/Copyable";
 import { OnboardingShell } from "@/components/OnboardingShell";
+import { PromptConnect } from "@/components/PromptConnect";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 import { useSystem, useVersion } from "@/lib/data";
-
-const EXTRACT_PROMPT = `Read this repository's shipped styling and extract its real design system: the colours, type, spacing, radii, and the usage rules the code already follows. Name tokens for their role, not their appearance — primary, ink, muted, surface, never blue600. Collapse near-duplicate values into one token. Keep the scales small and even. Then call the \`push_design_system\` tool on the \`miswadah\` MCP server with the result.`;
 
 export default function PromptPage() {
   const t = useTranslations("onboarding");
@@ -34,7 +32,7 @@ export default function PromptPage() {
         <p className="text-sm text-muted">{t("promptBody")}</p>
       </header>
 
-      <Copyable value={EXTRACT_PROMPT} />
+      <PromptConnect />
 
       <p className={`text-sm ${current.data ? "text-pass" : "text-muted"}`}>
         {current.data
