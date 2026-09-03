@@ -320,6 +320,31 @@ is the one mistake here that reaches other people's machines.
 
 ---
 
+## 5b. Connecting a repo without a terminal
+
+The dashboard's Connect screen has two ways in.
+
+**The prompt.** Press "Create a project and show me the prompt", copy what it
+gives you, and paste it into your agent inside the repo you want on brand. The
+prompt carries the address and the key, so the agent pushes with one HTTP
+request. Nothing to install.
+
+That prompt contains a project key. Anyone holding it can read and replace that
+project's design system, so keep it to your own agent.
+
+**The CLI.** The prompt is enough to push a system. The MCP server is what
+makes an agent consult the system and verify its own output *without being
+asked*, on every edit — that is the part worth wiring up properly once the repo
+matters.
+
+The plain endpoints, if you ever want them directly:
+
+```
+POST <base>/api/systems/push     Authorization: Bearer <project key>
+POST <base>/api/systems/verify   {"files":[{"path":"…","content":"…"}]}
+GET  <base>/api/systems/current
+```
+
 ## 6. Check it end to end
 
 In a scratch repo, against the real deployment:

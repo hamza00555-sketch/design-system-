@@ -20,6 +20,48 @@ export const FREE_PROJECT_LIMIT = PLANS.free.projects;
 /** Connect codes are meant to be typed within a couple of minutes. */
 export const CONNECT_CODE_TTL_MS = 15 * 60 * 1000;
 
+export interface CreateProjectInput {
+  teamId: string;
+  systemId: string;
+  name: string;
+  repoName?: string;
+  createdBy?: string;
+}
+
+/**
+ * Register a project and mint its key.
+ *
+ * The key is returned here and never again — it exists in the clear only in
+ * this response. Both ways in (a connect code from the CLI, or the dashboard
+ * asking directly) land here, so there is one place that decides what a
+ * project is.
+ */
+export async function createProject(
+  db: Firestore,
+  input: CreateProjectInput,
+): Promise<{ projectId: string; apiKey: string }> {
+  const apiKey = generateProjectKey();
+  const projectRef = db.collection("projects").doc();
+  const batch = db.batch();
+  batch.set(projectRef, {
+    teamId: input.teamId,
+    systemId: input.systemId,
+    name: input.name,
+    repoName: input.repoName ?? null,
+    keyPrefix: keyPrefixOf(apiKey),
+    createdBy: input.createdBy ?? null,
+    createdAt: FieldValue.serverTimestamp(),
+    lastSeenAt: null,
+  });
+  batch.set(db.collection("projectKeys").doc(hashKey(apiKey)), {
+    projectId: projectRef.id,
+    teamId: input.teamId,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+  return { projectId: projectRef.id, apiKey };
+}
+
 /**
  * Redeem a connect code: register the repo as a project and mint its key.
  *
@@ -85,25 +127,13 @@ export async function redeemConnectCode(
     };
   }
 
-  const apiKey = generateProjectKey();
-  const projectRef = db.collection("projects").doc();
-  const batch = db.batch();
-  batch.set(projectRef, {
+  const { projectId, apiKey } = await createProject(db, {
     teamId,
     systemId,
     name: request.projectName ?? "project",
-    repoName: request.repoName ?? null,
-    keyPrefix: keyPrefixOf(apiKey),
-    createdAt: FieldValue.serverTimestamp(),
-    lastSeenAt: null,
+    repoName: request.repoName,
   });
-  batch.set(db.collection("projectKeys").doc(hashKey(apiKey)), {
-    projectId: projectRef.id,
-    teamId,
-    createdAt: FieldValue.serverTimestamp(),
-  });
-  batch.set(codeRef, { usedAt: now, usedByProject: projectRef.id }, { merge: true });
-  await batch.commit();
+  await codeRef.set({ usedAt: now, usedByProject: projectId }, { merge: true });
 
-  return { ok: true, projectId: projectRef.id, apiKey };
+  return { ok: true, projectId, apiKey };
 }

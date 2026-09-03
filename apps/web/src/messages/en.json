@@ -62,7 +62,16 @@
     "after3": ".miswadah.json — the project id, never the key",
     "promptTitle": "Then build your system",
     "promptBody": "Paste this prompt into your agent inside that repo.",
-    "upgradeRequired": "The free plan covers one project. Upgrade to connect another."
+    "upgradeRequired": "The free plan covers one project. Upgrade to connect another.",
+    "promptWayTitle": "Give your agent the prompt",
+    "promptWayBody": "No install, no terminal. Create a project, copy the prompt, and paste it into your agent inside the repo you want on brand. It carries the address and the key it needs.",
+    "createProject": "Create a project and show me the prompt",
+    "creating": "Creating…",
+    "projectNameLabel": "What is this project called?",
+    "readyPrompt": "The prompt — paste this into your agent",
+    "keyWarning": "This prompt contains this project's key. Anyone holding it can read and replace your design system. Keep it to your own agent.",
+    "cliWayTitle": "Or wire it properly, with the CLI",
+    "cliWayBody": "The prompt above is enough to push a system. The MCP server is what makes an agent consult and verify on its own, without being asked, on every edit."
   },
   "history": {
     "title": "Version history",

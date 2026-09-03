@@ -4,7 +4,7 @@ export { canBootstrap, openSignups } from "./access.js";
 export { verifyCaller, memberRole, canManageTeam, isMember } from "./auth.js";
 export type { Caller, Role } from "./auth.js";
 export { applyStripeEvent, planForStatus, stripeGateway } from "./billing.js";
-export { redeemConnectCode, CONNECT_CODE_TTL_MS, FREE_PROJECT_LIMIT } from "./connect.js";
+export { createProject, redeemConnectCode, CONNECT_CODE_TTL_MS, FREE_PROJECT_LIMIT } from "./connect.js";
 export { mintConnectCode } from "./connectCodes.js";
 export { FirestoreStore } from "./firestoreStore.js";
 export { acceptInvite, inviteMember, removeMember, revokeInvite, INVITE_TTL_MS } from "./invites.js";

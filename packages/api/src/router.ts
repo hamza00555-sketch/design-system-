@@ -1,11 +1,16 @@
 import { BRAND } from "@miswadah/core";
-import { handleMcpHttp } from "@miswadah/mcp";
+import {
+  getDesignSystem,
+  handleMcpHttp,
+  pushDesignSystem,
+  verifyFiles,
+} from "@miswadah/mcp";
 import type { Firestore } from "firebase-admin/firestore";
 import { canBootstrap } from "./access.js";
 import { canManageTeam, memberRole, verifyCaller, type Caller } from "./auth.js";
 import { applyStripeEvent, stripeGateway } from "./billing.js";
-import { billingEnabled } from "./plans.js";
-import { redeemConnectCode } from "./connect.js";
+import { billingEnabled, checkProjectLimit, planForTeam } from "./plans.js";
+import { createProject, redeemConnectCode } from "./connect.js";
 import { mintConnectCode } from "./connectCodes.js";
 import { FirestoreStore } from "./firestoreStore.js";
 import { acceptInvite, inviteMember, removeMember, revokeInvite } from "./invites.js";
@@ -80,6 +85,34 @@ const AUTHED: Record<string, (ctx: AuthedCtx) => Promise<void>> = {
 
 /** Handlers that act on one team, and require membership in it. */
 const TEAM_SCOPED: Record<string, (ctx: TeamCtx) => Promise<void>> = {
+  // Creating a project straight from the dashboard, so the connect screen can
+  // hand over a ready prompt with a key in it. The CLI path still exists; this
+  // is the one that needs no terminal.
+  "/api/projects/create": async ({ db, res, caller, teamId, body }) => {
+    const systemId = String(body.systemId ?? "");
+    if (!systemId) return fail(res, 400, "systemId is required.", "bad_request");
+
+    const plan = await planForTeam(db, teamId);
+    const limit = await checkProjectLimit(db, teamId, plan);
+    if (!limit.allowed) {
+      return fail(
+        res,
+        403,
+        "The free plan covers one project. Upgrade to add another.",
+        "upgrade_required",
+      );
+    }
+
+    const result = await createProject(db, {
+      teamId,
+      systemId,
+      name: String(body.name ?? "project"),
+      repoName: body.repoName ? String(body.repoName) : undefined,
+      createdBy: caller.uid,
+    });
+    res.status(201).json(result);
+  },
+
   "/api/connect-codes": async ({ db, res, caller, teamId, body }) => {
     const systemId = String(body.systemId ?? "");
     if (!systemId) return fail(res, 400, "systemId is required.", "bad_request");
@@ -218,6 +251,51 @@ export async function handleApiRequest(
     if (path === "/mcp" || path === "/api/mcp") {
       await handleMcpHttp(req as never, res as never, store);
       return;
+    }
+
+    // The same three things MCP offers, over plain HTTP. An agent that was
+    // handed a URL and a key in a prompt can use them with one fetch, without
+    // a .mcp.json, a CLI, or a terminal. MCP stays the better path for
+    // continuous work — it is what makes an agent verify without being asked.
+    if (path.startsWith("/api/systems/")) {
+      const key = header(req, "authorization")?.replace(/^Bearer\s+/i, "").trim();
+      if (!key) {
+        return fail(res, 401, "Missing Bearer project key.", "invalid_token");
+      }
+      const ctx = await store.resolveKey(key);
+      if (!ctx) {
+        return fail(res, 401, "Unknown project key.", "invalid_token");
+      }
+
+      if (path === "/api/systems/current") {
+        res.status(200).json({ system: await getDesignSystem(store, ctx) });
+        return;
+      }
+      if (path === "/api/systems/push") {
+        const body = (req.body ?? {}) as Json;
+        try {
+          const system = body.system ?? body;
+          res.status(200).json({ result: await pushDesignSystem(store, ctx, system) });
+        } catch (err) {
+          fail(
+            res,
+            400,
+            err instanceof Error ? err.message : "That is not a valid design system.",
+            "bad_request",
+          );
+        }
+        return;
+      }
+      if (path === "/api/systems/verify") {
+        const body = (req.body ?? {}) as Json;
+        const files = Array.isArray(body.files) ? (body.files as never[]) : [];
+        if (files.length === 0) {
+          return fail(res, 400, "files is required.", "bad_request");
+        }
+        res.status(200).json({ result: await verifyFiles(store, ctx, files) });
+        return;
+      }
+      return fail(res, 404, "Not found.", "not_found");
     }
 
     if (path === "/api/health") {

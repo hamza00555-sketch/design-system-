@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { OnboardingShell } from "@/components/OnboardingShell";
 import { Link } from "@/i18n/navigation";
 import { Copyable } from "@/components/Copyable";
+import { PromptConnect } from "@/components/PromptConnect";
 import { ApiError, callApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
@@ -73,6 +74,13 @@ function Connect() {
         <h1 className="text-2xl font-medium tracking-tight">{t("title")}</h1>
         <p className="mt-1.5 text-sm text-muted">{t("body")}</p>
       </header>
+
+      <PromptConnect />
+
+      <div className="border-t border-line pt-6">
+        <h2 className="text-sm font-medium text-muted">{t("cliWayTitle")}</h2>
+        <p className="mt-1 text-sm text-muted">{t("cliWayBody")}</p>
+      </div>
 
       {error ? <p className="text-sm text-fail">{error}</p> : null}
 
