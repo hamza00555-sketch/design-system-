@@ -13,7 +13,7 @@ export default function MembersPage() {
   const t = useTranslations("settings");
   const { user, workspace } = useAuth();
   const params = useParams();
-  const locale = (params.locale as string) ?? "en";
+  const locale = (params?.locale as string) ?? "en";
 
   const members = useMembers(workspace?.teamId ?? null);
   const invites = usePendingInvites(workspace?.teamId ?? null);

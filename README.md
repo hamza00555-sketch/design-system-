@@ -50,9 +50,10 @@ generation against it before you ever see the result.
 ```
 packages/core   schema, verification engine, exporters   (no I/O, fully tested)
 packages/mcp    the MCP tools, over a Store interface
+packages/api    the HTTP API and MCP endpoint, host-agnostic
 packages/cli    the npm package: init · whoami · extract-prompt
-functions/      Firebase Cloud Functions: the API, the MCP endpoint, billing
-apps/web/       the site and dashboard, in Arabic and English
+apps/web/       the site, the dashboard, and the API — Arabic and English
+functions/      the same API on Firebase, for anyone on the Blaze plan
 scripts/        local dev server — no emulator, no Java
 ```
 
@@ -109,16 +110,10 @@ MISWADAH_API_BASE=http://localhost:8787 \
 
 ### Deploying
 
-Firebase for the API and the database rules, Vercel for the web app. The full
-runbook — including which Vercel root directory to set and why the Firestore
-rules go out before the functions — is in [DEPLOY.md](DEPLOY.md).
-
-```bash
-firebase use <your-project>
-pnpm --filter @miswadah/functions build
-firebase deploy --only firestore:rules,firestore:indexes
-firebase deploy --only functions
-```
+Vercel runs the site and the API; Firebase provides sign-in and the database.
+Both on their free plans — deploying Cloud Functions would need Firebase's paid
+Blaze plan, so the API lives with the site instead. The runbook is in
+[DEPLOY.md](DEPLOY.md).
 
 Firestore holds teams, systems, immutable versions, projects, and connect
 codes. **Every write goes through Cloud Functions** — the rules make the client

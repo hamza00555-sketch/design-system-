@@ -31,7 +31,7 @@ jobs:
       - name: Typecheck every package
         run: pnpm -r exec tsc --noEmit
 
-      - name: Build the web app
+      - name: Build the web app (and the API it serves)
         run: pnpm --filter @miswadah/web build
 
       - name: Check the published CLI contents

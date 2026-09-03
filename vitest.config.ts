@@ -11,10 +11,11 @@ export default defineConfig({
       "@miswadah/core/schema": src("./packages/core/src/schema.ts"),
       "@miswadah/core": src("./packages/core/src/index.ts"),
       "@miswadah/mcp": src("./packages/mcp/src/index.ts"),
+      "@miswadah/api": src("./packages/api/src/index.ts"),
     },
   },
   test: {
-    include: ["packages/*/test/**/*.test.ts", "functions/test/**/*.test.ts"],
+    include: ["packages/*/test/**/*.test.ts"],
     environment: "node",
   },
 });

@@ -18,7 +18,7 @@ export default function BillingPage() {
   const t = useTranslations("settings");
   const { workspace } = useAuth();
   const params = useParams();
-  const locale = (params.locale as string) ?? "en";
+  const locale = (params?.locale as string) ?? "en";
 
   const projects = useProjects(workspace?.teamId ?? null);
   const members = useMembers(workspace?.teamId ?? null);
@@ -154,7 +154,7 @@ export default function BillingPage() {
 function CheckoutNotice() {
   const t = useTranslations("settings");
   const search = useSearchParams();
-  const state = search.get("checkout");
+  const state = search?.get("checkout");
   if (state !== "done" && state !== "cancelled") return null;
 
   return (

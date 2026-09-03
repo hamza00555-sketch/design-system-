@@ -1,12 +1,21 @@
 # Deploying Miswadah
 
-Two things ship: **Firebase** (the API, the MCP endpoint, the database and its
-rules) and **Vercel** (the web app). Using the CLI is a third step that needs
-no publishing.
+Two things ship: **Vercel** (the site *and* the API) and **Firebase** (sign-in
+and the database). No billing account, no credit card.
 
-Do Firebase first — Vercel needs the function URL that Firebase prints.
+## Why the API is on Vercel
 
----
+Deploying Firebase Cloud Functions requires the paid **Blaze** plan — the
+Firebase docs are explicit: "to deploy functions, your project must be on the
+Blaze pricing plan." Firestore and Authentication are free on **Spark**.
+
+So the API runs on Vercel, where the site already is, as one serverless
+function at `apps/web/src/pages/api/[[...path]].ts`. It is a thin host over
+`@miswadah/api`, which holds the actual logic and knows nothing about who runs
+it. `functions/` is the same API on Firebase, kept for anyone who does upgrade
+to Blaze — nothing here needs it.
+
+That means Firebase is used only for what is free: sign-in and the database.
 
 ## 0. This is a private deployment
 
@@ -132,10 +141,26 @@ Console → **Firestore Database** → Create database → production mode → p
 region close to your users. Leave the default rules; you are about to replace
 them.
 
-### 2.4 Deploy the rules, the indexes, and the functions
+### 2.4 Publish the database rules
 
-If you are using Cloud Shell or the Actions workflow from 2.0, that is what
-this step is — skip the commands below.
+The rules are the security boundary: they make the browser read-only, scope
+every read to the caller's team, and hide `projectKeys` and `connectCodes` from
+every client. **Deploying rules does not need Blaze** — and you can do it
+without a terminal at all:
+
+Firebase console → **Firestore Database** → **Rules** tab → select everything
+in the editor, replace it with the contents of `firestore.rules` from this
+repo, and press **Publish**.
+
+Indexes: console → Firestore → **Indexes** → create the ones listed in
+`firestore.indexes.json`, or simpler, use the app once and click the link
+Firestore puts in the error when a query needs an index it does not have.
+
+With a terminal (Cloud Shell counts) both go out in one command:
+
+```bash
+npx firebase-tools deploy --only firestore:rules,firestore:indexes --project miswadah
+```
 
 The rules are the security boundary — they make the browser read-only, scope
 every read to the caller's team, and make `projectKeys` and `connectCodes`
@@ -221,8 +246,18 @@ NEXT_PUBLIC_FIREBASE_API_KEY=            # from 1.5
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=miswadah.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=miswadah
 NEXT_PUBLIC_FIREBASE_APP_ID=             # 1:...:web:...
-NEXT_PUBLIC_MISWADAH_API_BASE=https://us-central1-miswadah.cloudfunctions.net/api
+NEXT_PUBLIC_MISWADAH_API_BASE=https://<your-site>.vercel.app
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account", ... the whole JSON ... }
 ```
+
+`NEXT_PUBLIC_MISWADAH_API_BASE` is your own site's address, because the API is
+part of it now.
+
+`FIREBASE_SERVICE_ACCOUNT` is the one secret here: it is how the API writes to
+Firestore. Get it from the Firebase console → ⚙ **Project settings** →
+**Service accounts** → **Generate new private key** → paste the whole
+downloaded file into that one variable. It must **not** start with
+`NEXT_PUBLIC_` — that prefix would ship it to every visitor's browser.
 
 Leave `NEXT_PUBLIC_FIREBASE_EMULATORS`, `NEXT_PUBLIC_BILLING_ENABLED`, and
 `NEXT_PUBLIC_PUBLIC_SITE` unset — that is the private, billing-free default.

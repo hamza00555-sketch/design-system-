@@ -7,6 +7,8 @@ import { routing } from "./i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  // Everything except Next internals and files with an extension.
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  // Everything except Next internals, files with an extension, and the API —
+  // including /mcp, which is the API under another name. Locale-prefixing it
+  // would redirect every agent's MCP call to /en/mcp.
+  matcher: "/((?!api|mcp|_next|_vercel|.*\\..*).*)",
 };

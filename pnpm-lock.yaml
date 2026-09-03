@@ -29,12 +29,18 @@ importers:
 
   apps/web:
     dependencies:
+      '@miswadah/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@miswadah/core':
         specifier: workspace:*
         version: link:../../packages/core
       firebase:
         specifier: ^12.18.0
         version: 12.18.0
+      firebase-admin:
+        specifier: ^13.6.0
+        version: 13.10.0(@firebase/app-compat@0.5.17)(@firebase/app@0.16.1)
       next:
         specifier: ^16.3.3
         version: 16.3.3(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -69,25 +75,34 @@ importers:
 
   functions:
     dependencies:
-      '@miswadah/core':
+      '@miswadah/api':
         specifier: workspace:*
-        version: link:../packages/core
-      '@miswadah/mcp':
-        specifier: workspace:*
-        version: link:../packages/mcp
+        version: link:../packages/api
       firebase-admin:
         specifier: ^13.6.0
         version: 13.10.0(@firebase/app-compat@0.5.17)(@firebase/app@0.16.1)
       firebase-functions:
         specifier: ^7.0.0
         version: 7.3.2(firebase-admin@13.10.0(@firebase/app-compat@0.5.17)(@firebase/app@0.16.1))
-      stripe:
-        specifier: ^22.5.0
-        version: 22.5.0(@types/node@22.20.1)
     devDependencies:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/api:
+    dependencies:
+      '@miswadah/core':
+        specifier: workspace:*
+        version: link:../core
+      '@miswadah/mcp':
+        specifier: workspace:*
+        version: link:../mcp
+      firebase-admin:
+        specifier: ^13.6.0
+        version: 13.10.0(@firebase/app-compat@0.5.17)(@firebase/app@0.16.1)
+      stripe:
+        specifier: ^22.5.0
+        version: 22.5.0(@types/node@22.20.1)
 
   packages/cli:
     dependencies:

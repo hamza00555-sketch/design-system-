@@ -27,7 +27,10 @@ export async function verifyCaller(
       name: (decoded.name as string | undefined) ?? null,
       picture: (decoded.picture as string | undefined) ?? null,
     };
-  } catch {
+  } catch (err) {
+    // The caller only learns "sign in first", which is right — but an operator
+    // staring at a login that will not work needs the actual reason.
+    console.warn("token verification failed:", err instanceof Error ? err.message : err);
     return null;
   }
 }

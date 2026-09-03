@@ -18,7 +18,7 @@ export function LocaleSwitcher() {
   const params = useParams();
   const [pending, startTransition] = useTransition();
 
-  const current = params.locale as string;
+  const current = params?.locale as string;
   const next = routing.locales.find((locale) => locale !== current) ?? routing.defaultLocale;
 
   return (

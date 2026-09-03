@@ -4,14 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @miswadah/core build && next dev --turbopack",
-    "build": "pnpm --filter @miswadah/core build && next build",
+    "dev": "pnpm --filter @miswadah/core --filter @miswadah/mcp --filter @miswadah/api build && next dev --turbopack",
+    "build": "pnpm --filter @miswadah/core --filter @miswadah/mcp --filter @miswadah/api build && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@miswadah/api": "workspace:*",
     "@miswadah/core": "workspace:*",
     "firebase": "^12.18.0",
+    "firebase-admin": "^13.6.0",
     "next": "^16.3.3",
     "next-intl": "^4.13.7",
     "react": "^19.2.0",
