@@ -29,7 +29,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@tokenwell/core':
+      '@miswadah/core':
         specifier: workspace:*
         version: link:../../packages/core
       firebase:
@@ -69,10 +69,10 @@ importers:
 
   functions:
     dependencies:
-      '@tokenwell/core':
+      '@miswadah/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@tokenwell/mcp':
+      '@miswadah/mcp':
         specifier: workspace:*
         version: link:../packages/mcp
       firebase-admin:
@@ -110,12 +110,12 @@ importers:
 
   packages/mcp:
     dependencies:
+      '@miswadah/core':
+        specifier: workspace:*
+        version: link:../core
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
         version: 1.30.0(zod@4.4.3)
-      '@tokenwell/core':
-        specifier: workspace:*
-        version: link:../core
       zod:
         specifier: ^4.1.5
         version: 4.4.3

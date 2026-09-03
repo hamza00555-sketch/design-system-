@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { BRAND, DesignSystemSchema } from "@tokenwell/core";
+import { BRAND, DesignSystemSchema } from "@miswadah/core";
 import { z } from "zod";
 import type { ProjectContext, Store } from "./store.js";
 import {

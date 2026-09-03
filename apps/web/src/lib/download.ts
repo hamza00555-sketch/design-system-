@@ -1,6 +1,6 @@
 "use client";
 
-import { toDesignMd, toW3CTokens, type DesignSystem } from "@tokenwell/core";
+import { toDesignMd, toW3CTokens, type DesignSystem } from "@miswadah/core";
 
 /**
  * Export runs in the browser: the version document already holds the whole

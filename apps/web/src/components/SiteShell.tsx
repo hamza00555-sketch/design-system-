@@ -17,7 +17,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
     <div className="mx-auto flex min-h-screen w-full max-w-4xl flex-col px-6">
       <header className="flex flex-wrap items-center gap-x-5 gap-y-2 py-6">
         <Link href="/" className="font-mono text-sm tracking-tight">
-          tokenwell
+          miswadah
         </Link>
         <nav className="flex flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
           {PUBLIC_SITE ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { countTokens } from "@tokenwell/core";
+import { countTokens } from "@miswadah/core";
 import { useTranslations } from "next-intl";
 import { OnboardingShell } from "@/components/OnboardingShell";
 import { TokenGrid } from "@/components/TokenGrid";

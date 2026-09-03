@@ -1,11 +1,11 @@
 {
-  "name": "tokenwell",
+  "name": "miswadah",
   "version": "0.1.0",
   "description": "Serve your design system to every AI agent on every project.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "tokenwell": "dist/cli.js"
+    "miswadah": "dist/cli.js"
   },
   "files": [
     "dist",

@@ -44,5 +44,5 @@ Rules for the extraction itself:
 - Record the rules the code already follows, even unwritten ones — one primary
   button per view, cards never nest, headings never skip a level.
 
-Then call the `push_design_system` tool on the `tokenwell` MCP server with the
+Then call the `push_design_system` tool on the `miswadah` MCP server with the
 object as `system`. Report back the version number and the token count.

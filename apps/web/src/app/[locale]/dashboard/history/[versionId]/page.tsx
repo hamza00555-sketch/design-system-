@@ -1,6 +1,6 @@
 "use client";
 
-import { countTokens } from "@tokenwell/core";
+import { countTokens } from "@miswadah/core";
 import { useFormatter, useTranslations } from "next-intl";
 import { use } from "react";
 import { AppShell } from "@/components/AppShell";

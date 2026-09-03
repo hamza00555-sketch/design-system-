@@ -114,7 +114,7 @@ createServer((req, res) => {
           code: "upgrade_required",
         });
       }
-      const apiKey = `tw_live_${randomBytes(32).toString("base64url")}`;
+      const apiKey = `ms_live_${randomBytes(32).toString("base64url")}`;
       const projectId = `p${projects.size + 1}`;
       projects.set(projectId, {
         teamId: entry.teamId,
@@ -127,11 +127,11 @@ createServer((req, res) => {
       return json(res, 201, { projectId, apiKey });
     }
 
-    if (path === "/api/health") return json(res, 200, { ok: true, service: "tokenwell" });
+    if (path === "/api/health") return json(res, 200, { ok: true, service: "miswadah" });
     return json(res, 404, { error: "Not found.", code: "bad_request" });
   });
 }).listen(PORT, () => {
-  console.log(`tokenwell dev server → http://localhost:${PORT}`);
+  console.log(`miswadah dev server → http://localhost:${PORT}`);
   console.log(`connect code: ${SEED_CODE}`);
   console.log(`seeded system: ${versions.at(-1)?.system.meta.name ?? "none"}\n`);
 });

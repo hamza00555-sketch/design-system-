@@ -7,7 +7,7 @@ import {
   toW3CTokens,
   verify,
   type FileInput,
-} from "@tokenwell/core";
+} from "@miswadah/core";
 import type { ProjectContext, Store } from "./store.js";
 
 /**

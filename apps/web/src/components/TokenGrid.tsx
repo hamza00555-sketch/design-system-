@@ -1,6 +1,6 @@
 "use client";
 
-import type { DesignSystem, DimensionToken } from "@tokenwell/core";
+import type { DesignSystem, DimensionToken } from "@miswadah/core";
 import { useTranslations } from "next-intl";
 
 /**

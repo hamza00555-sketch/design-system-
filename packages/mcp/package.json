@@ -1,5 +1,5 @@
 {
-  "name": "@tokenwell/mcp",
+  "name": "@miswadah/mcp",
   "version": "0.1.0",
   "description": "MCP tools that serve a design system to coding agents.",
   "license": "MIT",
@@ -12,7 +12,7 @@
   "scripts": { "build": "tsup", "test": "vitest run" },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "@tokenwell/core": "workspace:*",
+    "@miswadah/core": "workspace:*",
     "zod": "^4.1.5"
   }
 }

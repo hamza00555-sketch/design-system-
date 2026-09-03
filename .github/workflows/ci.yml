@@ -32,7 +32,7 @@ jobs:
         run: pnpm -r exec tsc --noEmit
 
       - name: Build the web app
-        run: pnpm --filter @tokenwell/web build
+        run: pnpm --filter @miswadah/web build
 
       - name: Check the published CLI contents
-        run: pnpm --filter tokenwell exec npm pack --dry-run
+        run: pnpm --filter miswadah exec npm pack --dry-run

@@ -34,10 +34,10 @@ function stubConnect(response: { status: number; body: unknown }) {
 }
 
 beforeEach(() => {
-  cwd = mkdtempSync(join(tmpdir(), "tokenwell-"));
+  cwd = mkdtempSync(join(tmpdir(), "miswadah-"));
   logs.length = 0;
   errors.length = 0;
-  stubConnect({ status: 201, body: { projectId: "p1", apiKey: "tw_live_abcdefghijklmnop" } });
+  stubConnect({ status: 201, body: { projectId: "p1", apiKey: "ms_live_abcdefghijklmnop" } });
 });
 
 afterEach(() => {
@@ -50,16 +50,16 @@ describe("a clean repo", () => {
     writeFileSync(join(cwd, "package.json"), JSON.stringify({ name: "@acme/web" }));
     expect(await init()).toBe(0);
 
-    expect(JSON.parse(read(".tokenwell.json"))).toEqual({
+    expect(JSON.parse(read(".miswadah.json"))).toEqual({
       projectId: "p1",
       projectName: "web",
-      keyPrefix: "tw_live_abcdefgh",
+      keyPrefix: "ms_live_abcdefgh",
     });
 
     const mcp = JSON.parse(read(".mcp.json"));
-    expect(mcp.mcpServers.tokenwell.type).toBe("http");
-    expect(mcp.mcpServers.tokenwell.headers.Authorization).toBe(
-      "Bearer tw_live_abcdefghijklmnop",
+    expect(mcp.mcpServers.miswadah.type).toBe("http");
+    expect(mcp.mcpServers.miswadah.headers.Authorization).toBe(
+      "Bearer ms_live_abcdefghijklmnop",
     );
 
     expect(read("CLAUDE.md")).toContain("get_design_system");
@@ -78,9 +78,9 @@ describe("a clean repo", () => {
     expect(existsSync(join(cwd, ".cursor", "mcp.json"))).toBe(false);
 
     rmSync(cwd, { recursive: true, force: true });
-    cwd = mkdtempSync(join(tmpdir(), "tokenwell-"));
+    cwd = mkdtempSync(join(tmpdir(), "miswadah-"));
     await init({ cursor: true });
-    expect(JSON.parse(read(".cursor/mcp.json")).mcpServers.tokenwell).toBeDefined();
+    expect(JSON.parse(read(".cursor/mcp.json")).mcpServers.miswadah).toBeDefined();
   });
 });
 
@@ -93,7 +93,7 @@ describe("a repo that already has things in it", () => {
     await init();
     const mcp = JSON.parse(read(".mcp.json"));
     expect(mcp.mcpServers.github.url).toBe("https://example.com");
-    expect(mcp.mcpServers.tokenwell).toBeDefined();
+    expect(mcp.mcpServers.miswadah).toBeDefined();
   });
 
   it("leaves the user's CLAUDE.md content untouched", async () => {
@@ -126,7 +126,7 @@ describe("when something goes wrong", () => {
     expect(await init()).toBe(1);
     expect(errors.join("\n")).toContain("not valid JSON");
     expect(globalThis.fetch).not.toHaveBeenCalled();
-    expect(existsSync(join(cwd, ".tokenwell.json"))).toBe(false);
+    expect(existsSync(join(cwd, ".miswadah.json"))).toBe(false);
   });
 
   it("explains an expired code and how to get another", async () => {
@@ -157,7 +157,7 @@ describe("when something goes wrong", () => {
 
     expect(await init()).toBe(1);
     expect(read("CLAUDE.md")).toBe("# House rules\n");
-    expect(existsSync(join(cwd, ".tokenwell.json"))).toBe(false);
+    expect(existsSync(join(cwd, ".miswadah.json"))).toBe(false);
     expect(existsSync(join(cwd, ".mcp.json"))).toBe(false);
     expect(errors.join("\n")).toContain("were restored");
   });
@@ -190,6 +190,6 @@ describe("mcp config merging", () => {
   });
 
   it("treats an empty file as a fresh start", () => {
-    expect(JSON.parse(mergedMcpConfig("", "k", ".mcp.json")).mcpServers.tokenwell).toBeDefined();
+    expect(JSON.parse(mergedMcpConfig("", "k", ".mcp.json")).mcpServers.miswadah).toBeDefined();
   });
 });

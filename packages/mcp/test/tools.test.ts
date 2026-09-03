@@ -1,4 +1,4 @@
-import { clearGlass } from "@tokenwell/core/fixtures/clearGlass";
+import { clearGlass } from "@miswadah/core/fixtures/clearGlass";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   exportSystem,

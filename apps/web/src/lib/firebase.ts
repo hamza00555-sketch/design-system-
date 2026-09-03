@@ -16,7 +16,7 @@ const config = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-export const API_BASE = process.env.NEXT_PUBLIC_TOKENWELL_API_BASE ?? "";
+export const API_BASE = process.env.NEXT_PUBLIC_MISWADAH_API_BASE ?? "";
 
 export function isConfigured(): boolean {
   return Boolean(config.apiKey && config.projectId && API_BASE);

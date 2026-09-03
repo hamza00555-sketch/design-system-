@@ -1,5 +1,5 @@
-import { BRAND } from "@tokenwell/core";
-import { handleMcpHttp } from "@tokenwell/mcp";
+import { BRAND } from "@miswadah/core";
+import { handleMcpHttp } from "@miswadah/mcp";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { defineSecret, defineString } from "firebase-functions/params";
@@ -39,7 +39,7 @@ const APP_URL = defineString("APP_URL", { default: "http://127.0.0.1:3100" });
  * One HTTP function serving every surface:
  *
  *   POST /mcp                     the MCP endpoint every agent talks to
- *   POST /api/cli/connect         `tokenwell init` redeems a connect code
+ *   POST /api/cli/connect         `miswadah init` redeems a connect code
  *   POST /api/stripe/webhook      Stripe tells us who has paid
  *   POST /api/me/*                the app, as a signed-in person
  *   POST /api/{team-scoped}/*     the app, as a member of one team

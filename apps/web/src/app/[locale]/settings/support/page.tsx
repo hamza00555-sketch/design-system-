@@ -10,8 +10,8 @@ export default function SupportPage() {
     <SettingsShell>
       <div className="flex max-w-lg flex-col gap-3 text-sm text-muted">
         <p>{t("supportBody")}</p>
-        <a className="ltr-content font-mono text-ink hover:underline" href="mailto:support@tokenwell.design">
-          support@tokenwell.design
+        <a className="ltr-content font-mono text-ink hover:underline" href="mailto:support@miswadah.design">
+          support@miswadah.design
         </a>
       </div>
     </SettingsShell>

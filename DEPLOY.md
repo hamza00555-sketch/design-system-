@@ -1,4 +1,4 @@
-# Deploying Tokenwell
+# Deploying Miswadah
 
 Two things ship: **Firebase** (the API, the MCP endpoint, the database and its
 rules) and **Vercel** (the web app). Using the CLI is a third step that needs
@@ -54,6 +54,45 @@ Skip section 3 entirely until you want to charge.
 
 ## 2. Firebase — API, MCP endpoint, database rules
 
+### 2.0 If you do not use a terminal
+
+Everything below can be done from a browser. Two ways, and you only need one:
+
+**A — Google Cloud Shell (simplest).** Open <https://shell.cloud.google.com>.
+It is a terminal in a browser tab, already signed in as your Google account, so
+there is no install and no `firebase login`. Paste:
+
+```bash
+git clone https://github.com/hamza00555-sketch/design-system-.git
+cd design-system- && git checkout claude/eyedropper-analysis-plan-63mnst
+npm i -g pnpm && pnpm install
+npx firebase deploy --only firestore:rules,firestore:indexes --project miswadah
+npx firebase deploy --only functions --project miswadah
+```
+
+**B — GitHub Actions (a button, after a one-time setup).** This repo has a
+**Deploy Firebase** workflow. To let it act as you:
+
+1. <https://console.cloud.google.com/iam-admin/serviceaccounts> → select the
+   **miswadah** project → **Create service account** → name it `deployer`.
+2. Grant it these roles: *Firebase Admin*, *Cloud Functions Admin*,
+   *Cloud Run Admin*, *Artifact Registry Administrator*, *Cloud Build Editor*,
+   and *Service Account User*. Fewer than that and the functions deploy fails
+   part-way with a permission error.
+3. Open the service account → **Keys** → Add key → JSON → it downloads a file.
+4. GitHub → your repo → Settings → Secrets and variables → Actions → **New
+   repository secret**, named `FIREBASE_SERVICE_ACCOUNT`, and paste the whole
+   contents of that JSON file.
+5. Actions tab → **Deploy Firebase** → **Run workflow**.
+
+The workflow deploys rules first, then the functions, then checks that
+`/api/health` answers and prints the API base URL you need for Vercel.
+
+That JSON key can deploy to your project. Keep it in the GitHub secret and
+delete the downloaded copy.
+
+Sections 2.1 to 2.3 are console clicks either way — do those first.
+
 ### 2.1 Create the project
 
 ```bash
@@ -95,6 +134,9 @@ them.
 
 ### 2.4 Deploy the rules, the indexes, and the functions
 
+If you are using Cloud Shell or the Actions workflow from 2.0, that is what
+this step is — skip the commands below.
+
 The rules are the security boundary — they make the browser read-only, scope
 every read to the caller's team, and make `projectKeys` and `connectCodes`
 unreadable to any client. Deploy them **before or with** the functions, never
@@ -102,7 +144,7 @@ after:
 
 ```bash
 pnpm install
-pnpm --filter @tokenwell/functions build
+pnpm --filter @miswadah/functions build
 
 # Rules and indexes on their own first — cheap, instant, and the safe order.
 firebase deploy --only firestore:rules,firestore:indexes
@@ -131,7 +173,7 @@ Sanity check:
 
 ```bash
 curl https://us-central1-miswadah.cloudfunctions.net/api/api/health
-# {"ok":true,"service":"tokenwell"}
+# {"ok":true,"service":"miswadah"}
 ```
 
 ### 2.5 Web app config
@@ -163,11 +205,11 @@ settings matter more than usual.
 (`packages/core`) are available to the build.
 
 Do **not** override the build command with a bare `next build`. The app's own
-build script is `pnpm --filter @tokenwell/core build && next build`, and the
-first half is not optional: `@tokenwell/core` resolves through its `dist/`,
+build script is `pnpm --filter @miswadah/core build && next build`, and the
+first half is not optional: `@miswadah/core` resolves through its `dist/`,
 which is gitignored, so on a fresh clone there is nothing to import until it is
 built. Replacing the script with `next build` gives
-`Module not found: Can't resolve '@tokenwell/core'`.
+`Module not found: Can't resolve '@miswadah/core'`.
 
 ### 3.2 Environment variables
 
@@ -179,7 +221,7 @@ NEXT_PUBLIC_FIREBASE_API_KEY=            # from 1.5
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=miswadah.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=miswadah
 NEXT_PUBLIC_FIREBASE_APP_ID=             # 1:...:web:...
-NEXT_PUBLIC_TOKENWELL_API_BASE=https://us-central1-miswadah.cloudfunctions.net/api
+NEXT_PUBLIC_MISWADAH_API_BASE=https://us-central1-miswadah.cloudfunctions.net/api
 ```
 
 Leave `NEXT_PUBLIC_FIREBASE_EMULATORS`, `NEXT_PUBLIC_BILLING_ENABLED`, and
@@ -199,7 +241,7 @@ Push to the branch, or hit Deploy. Then, once you know the domain:
 
 ### 3.4 Custom domain
 
-Vercel → Project → Settings → Domains → add `tokenwell.design`. Vercel prints
+Vercel → Project → Settings → Domains → add `miswadah.design`. Vercel prints
 the DNS records; add them at your registrar. Then add the custom domain to the
 Firebase authorised domains list too.
 
@@ -230,11 +272,11 @@ You do not have to publish anything to npm to use this. On your own machines,
 point the CLI at your deployment with an environment variable:
 
 ```bash
-export TOKENWELL_API_BASE=https://us-central1-miswadah.cloudfunctions.net/api
+export MISWADAH_API_BASE=https://us-central1-miswadah.cloudfunctions.net/api
 node /path/to/design-system-/packages/cli/dist/cli.js init --code XXXX-XXXX
 ```
 
-Or `pnpm --filter tokenwell exec npm link` once, and then `tokenwell init`
+Or `pnpm --filter miswadah exec npm link` once, and then `miswadah init`
 works anywhere on that machine.
 
 If you ever do publish it, set the default API base in
@@ -248,7 +290,7 @@ is the one mistake here that reaches other people's machines.
 In a scratch repo, against the real deployment:
 
 ```bash
-npx tokenwell init --code <code from the dashboard's Connect screen>
+npx miswadah init --code <code from the dashboard's Connect screen>
 ```
 
 Then in an agent session in that repo, ask for something visual. Confirm it

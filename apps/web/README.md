@@ -52,20 +52,20 @@ is no privileged path through the browser.
 
 Export is the exception that needs no server at all: the version document
 already holds the whole system, so `DESIGN.md` and the W3C tokens JSON are
-generated in the browser from `@tokenwell/core`.
+generated in the browser from `@miswadah/core`.
 
 ## Running it locally
 
 ```bash
 cp apps/web/.env.example apps/web/.env.local   # then fill it in
-pnpm --filter @tokenwell/functions build
-npx firebase emulators:start --project demo-tokenwell --only auth,firestore,functions
-pnpm --filter @tokenwell/web dev
+pnpm --filter @miswadah/functions build
+npx firebase emulators:start --project demo-miswadah --only auth,firestore,functions
+pnpm --filter @miswadah/web dev
 ```
 
 For the emulators, `.env.local` wants the demo values and
 `NEXT_PUBLIC_FIREBASE_EMULATORS=1`; the API base is
-`http://127.0.0.1:5001/demo-tokenwell/us-central1/api`.
+`http://127.0.0.1:5001/demo-miswadah/us-central1/api`.
 
 One caveat if you are running inside a sandbox that intercepts TLS:
 `signInWithPopup` loads `apis.google.com`, so the popup will hang there even

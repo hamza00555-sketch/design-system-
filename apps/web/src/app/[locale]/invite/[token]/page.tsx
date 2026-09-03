@@ -51,9 +51,9 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center gap-6 px-6">
       <div>
-        <div className="mb-8 font-mono text-sm tracking-tight">tokenwell</div>
+        <div className="mb-8 font-mono text-sm tracking-tight">miswadah</div>
         <h1 className="text-2xl font-medium tracking-tight">
-          {t("title", { team: teamName ?? "Tokenwell" })}
+          {t("title", { team: teamName ?? "Miswadah" })}
         </h1>
         <p className="mt-2 text-sm text-muted">{t("body")}</p>
       </div>

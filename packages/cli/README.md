@@ -1,16 +1,16 @@
-# tokenwell
+# miswadah
 
 **Serve your design system to every AI agent on every project.**
 
 Every new agent session reinvents your brand — three near-miss blues, two
-border radii, buttons that almost match. Tokenwell keeps one canonical,
+border radii, buttons that almost match. Miswadah keeps one canonical,
 versioned design system in the cloud, serves it to your agents over MCP, and
 checks every generation against it before you see the result.
 
 ## Connect a repo
 
 ```bash
-npx tokenwell init
+npx miswadah init
 ```
 
 You will be asked for a connect code — mint one on the Connect screen of your
@@ -21,9 +21,9 @@ dashboard. It works once and expires in fifteen minutes.
 1. Registers this repo as a project and receives its API key.
 2. Writes `.mcp.json` (Claude Code); pass `--cursor` to also write
    `.cursor/mcp.json`. These hold the project key, so init gitignores them.
-3. Stores the project id in `.tokenwell.json` — never the key.
+3. Stores the project id in `.miswadah.json` — never the key.
 4. Installs the agent rules block into `CLAUDE.md` and `AGENTS.md`, between
-   `<!-- tokenwell:start/end -->` markers. Idempotent; your content is left
+   `<!-- miswadah:start/end -->` markers. Idempotent; your content is left
    exactly as it was.
 
 ## What your agent gets
@@ -39,17 +39,17 @@ dashboard. It works once and expires in fifteen minutes.
 ## Commands
 
 ```bash
-npx tokenwell init [--code <code>] [--cursor]   # connect this repo
-npx tokenwell whoami                            # show this repo's connection
-npx tokenwell extract-prompt                    # the prompt that builds your system
+npx miswadah init [--code <code>] [--cursor]   # connect this repo
+npx miswadah whoami                            # show this repo's connection
+npx miswadah extract-prompt                    # the prompt that builds your system
 ```
 
 ## Self-hosting
 
-`TOKENWELL_API_BASE` points the CLI at a different deployment:
+`MISWADAH_API_BASE` points the CLI at a different deployment:
 
 ```bash
-TOKENWELL_API_BASE=https://your-api npx tokenwell init --code XXXX-XXXX
+MISWADAH_API_BASE=https://your-api npx miswadah init --code XXXX-XXXX
 ```
 
 Your design system stays yours: export a clean `DESIGN.md` and W3C design

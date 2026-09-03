@@ -1,17 +1,17 @@
 /**
- * Names and endpoints. Duplicated from @tokenwell/core rather than imported so
- * the published CLI stays a single dependency-light package — `npx tokenwell`
+ * Names and endpoints. Duplicated from @miswadah/core rather than imported so
+ * the published CLI stays a single dependency-light package — `npx miswadah`
  * should download in a second.
  */
 export const BRAND = {
-  name: "Tokenwell",
-  cli: "tokenwell",
-  mcpServerKey: "tokenwell",
-  rulesMarker: "tokenwell",
-  projectConfigFile: ".tokenwell.json",
+  name: "Miswadah",
+  cli: "miswadah",
+  mcpServerKey: "miswadah",
+  rulesMarker: "miswadah",
+  projectConfigFile: ".miswadah.json",
 } as const;
 
 export const API_BASE =
-  process.env.TOKENWELL_API_BASE ?? "https://api.tokenwell.design";
+  process.env.MISWADAH_API_BASE ?? "https://api.miswadah.design";
 
 export const MCP_URL = `${API_BASE}/mcp`;

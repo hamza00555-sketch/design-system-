@@ -1,4 +1,4 @@
-import { countTokens, diffSystems, type DesignSystem, type SystemDiff, type VerifyResult } from "@tokenwell/core";
+import { countTokens, diffSystems, type DesignSystem, type SystemDiff, type VerifyResult } from "@miswadah/core";
 import type { ProjectContext, Store, StoredSystem, VersionRef } from "../src/store.js";
 
 /** An in-memory Store, so the tools can be tested without a database. */
@@ -9,7 +9,7 @@ export class MemoryStore implements Store {
 
   constructor(
     private readonly keys: Record<string, ProjectContext> = {
-      "tw_live_test": {
+      "ms_live_test": {
         projectId: "p1",
         teamId: "t1",
         systemId: "s1",

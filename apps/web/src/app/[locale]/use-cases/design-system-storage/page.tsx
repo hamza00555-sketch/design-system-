@@ -51,7 +51,7 @@ function Storage() {
             {
               title: t("useCases.live3Title"),
               body: t("useCases.live3Body"),
-              code: "npx tokenwell init",
+              code: "npx miswadah init",
             },
           ]}
         />

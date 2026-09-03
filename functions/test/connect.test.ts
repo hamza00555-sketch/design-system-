@@ -23,7 +23,7 @@ describe("redeeming a connect code", () => {
     const result = await connect("ABCD2345");
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.apiKey.startsWith("tw_live_")).toBe(true);
+    expect(result.apiKey.startsWith("ms_live_")).toBe(true);
     expect(fake.data.get(`projects/${result.projectId}`)).toMatchObject({
       teamId: "t1",
       systemId: "s1",

@@ -1,4 +1,4 @@
-import { diffSystems } from "@tokenwell/core";
+import { diffSystems } from "@miswadah/core";
 import type { Firestore } from "firebase-admin/firestore";
 import { FirestoreStore } from "./firestoreStore.js";
 

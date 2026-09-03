@@ -5,9 +5,9 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // This repo keeps its agent rules at the root, written by `tokenwell init`.
+  // This repo keeps its agent rules at the root, written by `miswadah init`.
   agentRules: false,
-  transpilePackages: ["@tokenwell/core"],
+  transpilePackages: ["@miswadah/core"],
 };
 
 export default withNextIntl(nextConfig);

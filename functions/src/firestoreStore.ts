@@ -1,5 +1,5 @@
-import { countTokens, parseDesignSystem, type DesignSystem, type SystemDiff, type VerifyResult } from "@tokenwell/core";
-import type { ProjectContext, Store, StoredSystem, VersionRef } from "@tokenwell/mcp";
+import { countTokens, parseDesignSystem, type DesignSystem, type SystemDiff, type VerifyResult } from "@miswadah/core";
+import type { ProjectContext, Store, StoredSystem, VersionRef } from "@miswadah/mcp";
 import type { Firestore } from "firebase-admin/firestore";
 import { FieldValue } from "firebase-admin/firestore";
 import { hashKey } from "./keys.js";

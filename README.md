@@ -1,4 +1,4 @@
-# Tokenwell
+# Miswadah
 
 **Serve your design system to every AI agent on every project.**
 **قدِّم نظام التصميم الخاص بك لكل وكيل ذكاء اصطناعي في كل مشروع.**
@@ -8,16 +8,16 @@
 ## English
 
 Every new agent session reinvents your brand — three near-miss blues, two border
-radii, buttons that almost match. Tokenwell keeps one canonical, versioned
+radii, buttons that almost match. Miswadah keeps one canonical, versioned
 design system in the cloud, serves it to your agents over MCP, and checks every
 generation against it before you ever see the result.
 
 ### How it works
 
-1. **Extract** — `npx tokenwell extract-prompt` prints a prompt. Paste it into
+1. **Extract** — `npx miswadah extract-prompt` prints a prompt. Paste it into
    your agent; it reads your shipped styling and pushes the real system up.
    No Figma library, no code parser to maintain.
-2. **Connect** — `npx tokenwell init` wires the repo: MCP config for Claude
+2. **Connect** — `npx miswadah init` wires the repo: MCP config for Claude
    Code and Cursor, plus a rules block in `CLAUDE.md` and `AGENTS.md` that
    teaches the agent to consult before visual work and verify after.
 3. **Stay on brand** — every generation is verified. Off-brand values come back
@@ -95,15 +95,15 @@ For the full stack — auth, Firestore, billing webhooks — run the emulators
 instead, and see `apps/web/README.md` for the web app's environment:
 
 ```bash
-pnpm --filter @tokenwell/functions build
-npx firebase emulators:start --project demo-tokenwell --only auth,firestore,functions
-pnpm --filter @tokenwell/web dev
+pnpm --filter @miswadah/functions build
+npx firebase emulators:start --project demo-miswadah --only auth,firestore,functions
+pnpm --filter @miswadah/web dev
 ```
 
 Then, in any repo:
 
 ```bash
-TOKENWELL_API_BASE=http://localhost:8787 \
+MISWADAH_API_BASE=http://localhost:8787 \
   node packages/cli/dist/cli.js init --code DEV1-2345
 ```
 
@@ -115,7 +115,7 @@ rules go out before the functions — is in [DEPLOY.md](DEPLOY.md).
 
 ```bash
 firebase use <your-project>
-pnpm --filter @tokenwell/functions build
+pnpm --filter @miswadah/functions build
 firebase deploy --only firestore:rules,firestore:indexes
 firebase deploy --only functions
 ```
@@ -133,16 +133,16 @@ only as a SHA-256 hash.
 ## العربية
 
 كل جلسة جديدة مع وكيل ذكاء اصطناعي تعيد اختراع هويتك البصرية — ثلاثة درجات زرقاء
-متقاربة، قُطران مختلفان للحواف، أزرار «تكاد» تتطابق. Tokenwell يحتفظ بنظام تصميم
+متقاربة، قُطران مختلفان للحواف، أزرار «تكاد» تتطابق. Miswadah يحتفظ بنظام تصميم
 واحد مرجعي ومُصدَّر في السحابة، يقدّمه لوكلائك عبر MCP، ويتحقق من كل ما يولّدونه
 قبل أن تراه أنت.
 
 ### كيف يعمل
 
-1. **الاستخراج** — `npx tokenwell extract-prompt` يطبع برومبتًا. الصقه في وكيلك؛
+1. **الاستخراج** — `npx miswadah extract-prompt` يطبع برومبتًا. الصقه في وكيلك؛
    يقرأ أنماط مشروعك الفعلية ويرفع النظام الحقيقي. بلا مكتبة Figma وبلا محلل كود
    تصونه بنفسك.
-2. **التوصيل** — `npx tokenwell init` يجهّز المستودع: إعدادات MCP لـ Claude Code
+2. **التوصيل** — `npx miswadah init` يجهّز المستودع: إعدادات MCP لـ Claude Code
    و Cursor، وكتلة قواعد داخل `CLAUDE.md` و `AGENTS.md` تعلّم الوكيل أن يستشير
    النظام قبل أي عمل بصري وأن يتحقق بعده.
 3. **البقاء على الهوية** — كل توليد يُفحص. القيم الخارجة عن الهوية تعود مُسمّاة،

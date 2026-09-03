@@ -80,7 +80,7 @@ function Connect() {
         <p className="text-sm text-muted">{t("minting")}</p>
       ) : (
         <div className="flex flex-col gap-3">
-          <Copyable value={`npx tokenwell init --code ${minted.code}`} />
+          <Copyable value={`npx miswadah init --code ${minted.code}`} />
           <div className="flex items-center gap-3 text-xs text-faint">
             <span>
               {expired

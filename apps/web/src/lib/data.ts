@@ -1,6 +1,6 @@
 "use client";
 
-import { parseDesignSystem, type DesignSystem } from "@tokenwell/core";
+import { parseDesignSystem, type DesignSystem } from "@miswadah/core";
 import {
   collection,
   doc,

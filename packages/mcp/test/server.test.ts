@@ -1,6 +1,6 @@
 import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { clearGlass } from "@tokenwell/core/fixtures/clearGlass";
+import { clearGlass } from "@miswadah/core/fixtures/clearGlass";
 import { handleMcpHttp } from "../src/server.js";
 import { MemoryStore } from "./memoryStore.js";
 
@@ -33,7 +33,7 @@ afterAll(() => {
   server.close();
 });
 
-async function rpc(method: string, params: unknown, key = "tw_live_test") {
+async function rpc(method: string, params: unknown, key = "ms_live_test") {
   const res = await fetch(`${base}/mcp`, {
     method: "POST",
     headers: {
@@ -61,7 +61,7 @@ describe("auth", () => {
   });
 
   it("refuses an unknown key", async () => {
-    const { status, body } = await rpc("tools/list", {}, "tw_live_nope");
+    const { status, body } = await rpc("tools/list", {}, "ms_live_nope");
     expect(status).toBe(401);
     expect(body.code).toBe("invalid_token");
   });
@@ -74,7 +74,7 @@ describe("protocol", () => {
       capabilities: {},
       clientInfo: { name: "test", version: "1.0.0" },
     });
-    expect(body.result.serverInfo.name).toBe("tokenwell");
+    expect(body.result.serverInfo.name).toBe("miswadah");
   });
 
   it("lists the tools an agent needs", async () => {

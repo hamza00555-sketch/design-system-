@@ -17,7 +17,7 @@ export default function SignInPage() {
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center gap-8 px-6">
       <div>
-        <div className="mb-8 font-mono text-sm tracking-tight">tokenwell</div>
+        <div className="mb-8 font-mono text-sm tracking-tight">miswadah</div>
         <h1 className="text-2xl font-medium tracking-tight">{t("title")}</h1>
         <p className="mt-2 text-sm text-muted">{t("subtitle")}</p>
       </div>

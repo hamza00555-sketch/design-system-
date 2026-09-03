@@ -3,15 +3,15 @@
  */
 export const BRAND = {
   /** Product name as shown to people. */
-  name: "Tokenwell",
+  name: "Miswadah",
   /** npm package + CLI binary name. */
-  cli: "tokenwell",
+  cli: "miswadah",
   /** MCP server key written into .mcp.json. */
-  mcpServerKey: "tokenwell",
+  mcpServerKey: "miswadah",
   /** Marker used to fence the agent rules block in CLAUDE.md / AGENTS.md. */
-  rulesMarker: "tokenwell",
+  rulesMarker: "miswadah",
   /** Local, key-free project config file written by `init`. */
-  projectConfigFile: ".tokenwell.json",
+  projectConfigFile: ".miswadah.json",
   /** Prefix on issued project API keys. */
-  keyPrefix: "tw_live_",
+  keyPrefix: "ms_live_",
 } as const;

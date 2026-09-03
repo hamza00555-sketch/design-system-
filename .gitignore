@@ -27,6 +27,6 @@ ui-debug.log
 .idea/
 .vscode/
 
-# tokenwell: these hold a project API key — never commit them
+# miswadah: these hold a project API key — never commit them
 .mcp.json
 .cursor/mcp.json

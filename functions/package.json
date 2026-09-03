@@ -1,5 +1,5 @@
 {
-  "name": "@tokenwell/functions",
+  "name": "@miswadah/functions",
   "version": "0.1.0",
   "private": true,
   "description": "Firebase Cloud Functions: the MCP endpoint and the CLI connect API.",
@@ -9,13 +9,13 @@
     "node": "22"
   },
   "scripts": {
-    "build": "pnpm --filter @tokenwell/core --filter @tokenwell/mcp build && tsc",
+    "build": "pnpm --filter @miswadah/core --filter @miswadah/mcp build && tsc",
     "serve": "pnpm build && firebase emulators:start --only functions,firestore",
     "deploy": "pnpm build && firebase deploy --only functions"
   },
   "dependencies": {
-    "@tokenwell/core": "workspace:*",
-    "@tokenwell/mcp": "workspace:*",
+    "@miswadah/core": "workspace:*",
+    "@miswadah/mcp": "workspace:*",
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.0",
     "stripe": "^22.5.0"

@@ -1,4 +1,4 @@
-import type { DesignSystem, SystemDiff, VerifyResult } from "@tokenwell/core";
+import type { DesignSystem, SystemDiff, VerifyResult } from "@miswadah/core";
 
 /** Who is calling — resolved from the project API key on every request. */
 export interface ProjectContext {

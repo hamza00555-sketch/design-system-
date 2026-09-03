@@ -52,7 +52,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-6">
       <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-line py-5">
         <Link href="/dashboard" className="font-mono text-sm tracking-tight">
-          tokenwell
+          miswadah
         </Link>
         <nav className="flex flex-1 flex-wrap items-center gap-1">
           {NAV.map((item) => {

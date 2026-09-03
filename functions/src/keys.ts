@@ -1,5 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { BRAND } from "@tokenwell/core";
+import { BRAND } from "@miswadah/core";
 
 /**
  * Project API keys. The plaintext key is shown once, at connect time, and

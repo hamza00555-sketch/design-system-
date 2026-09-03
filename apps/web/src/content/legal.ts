@@ -25,7 +25,7 @@ export interface LegalDocument {
 }
 
 const COMPANY = "[Operating entity]";
-const CONTACT = "support@tokenwell.design";
+const CONTACT = "support@miswadah.design";
 const UPDATED_EN = "Last updated: 25 August 2026";
 const UPDATED_AR = "آخر تحديث: ٢٥ أغسطس ٢٠٢٦";
 
@@ -34,7 +34,7 @@ const privacyEn: LegalDocument = {
   updated: UPDATED_EN,
   draftNotice:
     "Draft. This describes what the software genuinely does, but the operating entity and governing law are still placeholders and a lawyer has not reviewed it.",
-  intro: `Tokenwell is operated by ${COMPANY}. It builds a design system from code you point it at and serves that system to your AI coding agents. This explains what we collect to do that, and what we do with it.`,
+  intro: `Miswadah is operated by ${COMPANY}. It builds a design system from code you point it at and serves that system to your AI coding agents. This explains what we collect to do that, and what we do with it.`,
   sections: [
     {
       heading: "What we collect",
@@ -86,12 +86,12 @@ const termsEn: LegalDocument = {
   updated: UPDATED_EN,
   draftNotice:
     "Draft. This describes what the software genuinely does, but the operating entity and governing law are still placeholders and a lawyer has not reviewed it.",
-  intro: `These terms are an agreement between you and ${COMPANY}. By creating an account you accept them. If you are using Tokenwell for a company, you accept them on the company's behalf.`,
+  intro: `These terms are an agreement between you and ${COMPANY}. By creating an account you accept them. If you are using Miswadah for a company, you accept them on the company's behalf.`,
   sections: [
     {
       heading: "The service",
       body: [
-        "Tokenwell stores a versioned design system and serves it to your projects, teammates, and AI coding agents through the web app, the command-line tool, and the MCP endpoint.",
+        "Miswadah stores a versioned design system and serves it to your projects, teammates, and AI coding agents through the web app, the command-line tool, and the MCP endpoint.",
         "We may improve or change features over time. We will not remove your ability to export your design system.",
       ],
     },
@@ -105,8 +105,8 @@ const termsEn: LegalDocument = {
     {
       heading: "Your content",
       body: [
-        "The code you point Tokenwell at and the design systems extracted from it are yours. You grant us only the licence needed to store, process, and serve that material to you, your team, and the tools you connect.",
-        "You promise you have the right to the code you point Tokenwell at.",
+        "The code you point Miswadah at and the design systems extracted from it are yours. You grant us only the licence needed to store, process, and serve that material to you, your team, and the tools you connect.",
+        "You promise you have the right to the code you point Miswadah at.",
       ],
     },
     {
@@ -140,7 +140,7 @@ const privacyAr: LegalDocument = {
   updated: UPDATED_AR,
   draftNotice:
     "مسوّدة. ما يلي وصف صادق لما يفعله البرنامج فعلاً، لكن اسم الجهة المشغّلة والقانون الحاكم ما زالا مكانَين شاغرَين، ولم يراجعها محامٍ بعد.",
-  intro: `تُشغَّل Tokenwell من قِبل ${COMPANY}. تبني نظام تصميم من الكود الذي توجّهها إليه، وتقدّمه لوكلاء البرمجة بالذكاء الاصطناعي لديك. وهنا نوضّح ما نجمعه لأجل ذلك، وما نفعله به.`,
+  intro: `تُشغَّل Miswadah من قِبل ${COMPANY}. تبني نظام تصميم من الكود الذي توجّهها إليه، وتقدّمه لوكلاء البرمجة بالذكاء الاصطناعي لديك. وهنا نوضّح ما نجمعه لأجل ذلك، وما نفعله به.`,
   sections: [
     {
       heading: "ما نجمعه",
@@ -192,12 +192,12 @@ const termsAr: LegalDocument = {
   updated: UPDATED_AR,
   draftNotice:
     "مسوّدة. ما يلي وصف صادق لما يفعله البرنامج فعلاً، لكن اسم الجهة المشغّلة والقانون الحاكم ما زالا مكانَين شاغرَين، ولم يراجعها محامٍ بعد.",
-  intro: `هذه الشروط اتفاق بينك وبين ${COMPANY}. بإنشائك حسابًا فأنت تقبلها. وإن كنت تستخدم Tokenwell لصالح شركة، فأنت تقبلها نيابة عنها.`,
+  intro: `هذه الشروط اتفاق بينك وبين ${COMPANY}. بإنشائك حسابًا فأنت تقبلها. وإن كنت تستخدم Miswadah لصالح شركة، فأنت تقبلها نيابة عنها.`,
   sections: [
     {
       heading: "الخدمة",
       body: [
-        "تحفظ Tokenwell نظام تصميم مُصدَّرًا وتقدّمه لمشاريعك وزملائك ووكلاء البرمجة لديك، عبر تطبيق الويب وأداة سطر الأوامر ونقطة MCP.",
+        "تحفظ Miswadah نظام تصميم مُصدَّرًا وتقدّمه لمشاريعك وزملائك ووكلاء البرمجة لديك، عبر تطبيق الويب وأداة سطر الأوامر ونقطة MCP.",
         "قد نحسّن المزايا أو نغيّرها مع الوقت، ولن نسلبك القدرة على تصدير نظام تصميمك.",
       ],
     },
@@ -211,7 +211,7 @@ const termsAr: LegalDocument = {
     {
       heading: "محتواك",
       body: [
-        "الكود الذي توجّه Tokenwell إليه، وأنظمة التصميم المستخرجة منه، ملكك أنت. وتمنحنا فقط الترخيص اللازم لحفظ ذلك المحتوى ومعالجته وتقديمه لك ولفريقك وللأدوات التي توصّلها.",
+        "الكود الذي توجّه Miswadah إليه، وأنظمة التصميم المستخرجة منه، ملكك أنت. وتمنحنا فقط الترخيص اللازم لحفظ ذلك المحتوى ومعالجته وتقديمه لك ولفريقك وللأدوات التي توصّلها.",
         "وتقرّ بأن لك حق التصرف في الكود الذي توجّهنا إليه.",
       ],
     },

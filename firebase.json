@@ -14,7 +14,7 @@
         "**/*.local"
       ],
       "predeploy": [
-        "pnpm --filter @tokenwell/functions build"
+        "pnpm --filter @miswadah/functions build"
       ]
     }
   ],
