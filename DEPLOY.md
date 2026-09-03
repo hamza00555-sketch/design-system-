@@ -153,13 +153,20 @@ settings matter more than usual.
 | --- | --- |
 | Framework preset | Next.js |
 | **Root directory** | `apps/web` |
-| Build command | leave default (`next build`) |
+| Build command | leave default — it runs the app's own `build` script |
 | Install command | leave default — Vercel detects pnpm from the lockfile |
 | Node version | 22 (Project Settings → General) |
 
 **Root directory is the one that bites.** Set it to `apps/web` and tick
 "Include files outside the root directory" so the workspace packages
 (`packages/core`) are available to the build.
+
+Do **not** override the build command with a bare `next build`. The app's own
+build script is `pnpm --filter @tokenwell/core build && next build`, and the
+first half is not optional: `@tokenwell/core` resolves through its `dist/`,
+which is gitignored, so on a fresh clone there is nothing to import until it is
+built. Replacing the script with `next build` gives
+`Module not found: Can't resolve '@tokenwell/core'`.
 
 ### 3.2 Environment variables
 

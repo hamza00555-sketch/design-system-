@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
+    "dev": "pnpm --filter @tokenwell/core build && next dev --turbopack",
+    "build": "pnpm --filter @tokenwell/core build && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },

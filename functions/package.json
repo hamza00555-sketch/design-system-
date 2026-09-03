@@ -9,7 +9,7 @@
     "node": "22"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm --filter @tokenwell/core --filter @tokenwell/mcp build && tsc",
     "serve": "pnpm build && firebase emulators:start --only functions,firestore",
     "deploy": "pnpm build && firebase deploy --only functions"
   },
