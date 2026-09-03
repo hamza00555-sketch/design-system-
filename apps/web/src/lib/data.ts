@@ -40,6 +40,14 @@ export interface VerificationDoc {
   createdAt: Date | null;
 }
 
+export interface ScreenDoc {
+  id: string;
+  name: string;
+  description: string | null;
+  /** Ready for an <img src>, assembled from the stored base64. */
+  src: string;
+}
+
 export interface MemberDoc {
   id: string;
   uid: string;
@@ -197,6 +205,31 @@ export function useVerifications(systemId: string | null, max = 12) {
       : null,
     [],
     [systemId, max],
+  );
+}
+
+export function useScreens(systemId: string | null) {
+  return useLive<ScreenDoc[]>(
+    systemId
+      ? (onData, onError) =>
+          onSnapshot(
+            collection(db(), "systems", systemId, "screens"),
+            (snap) =>
+              onData(
+                snap.docs.map((d) => ({
+                  id: d.id,
+                  name: (d.get("name") as string) ?? d.id,
+                  description: (d.get("description") as string) ?? null,
+                  src: `data:${(d.get("mimeType") as string) ?? "image/png"};base64,${
+                    (d.get("data") as string) ?? ""
+                  }`,
+                })),
+              ),
+            (err) => onError(err.message),
+          )
+      : null,
+    [],
+    [systemId],
   );
 }
 

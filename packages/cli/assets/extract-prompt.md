@@ -46,3 +46,10 @@ Rules for the extraction itself:
 
 Then call the `push_design_system` tool on the `miswadah` MCP server with the
 object as `system`. Report back the version number and the token count.
+
+Finally, attach screenshots. The tokens carry the values; the screenshots carry
+the look, and a later agent can see them where it cannot see a hex code. Run
+the app, capture the two to four screens that carry the most of its character,
+and call `add_screen` for each — WebP around 1200px wide, under 400 KB.
+
+If you cannot run the app, skip this step. Do not invent screenshots.

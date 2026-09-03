@@ -3,6 +3,7 @@
 import { countTokens } from "@miswadah/core";
 import { useFormatter, useTranslations } from "next-intl";
 import { AppShell } from "@/components/AppShell";
+import { ScreenGallery } from "@/components/ScreenGallery";
 import { TokenGrid } from "@/components/TokenGrid";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
@@ -94,6 +95,8 @@ function Dashboard() {
           </ul>
         )}
       </section>
+
+      <ScreenGallery systemId={workspace?.systemId ?? null} />
 
       <TokenGrid system={version.system} />
     </div>

@@ -24,6 +24,14 @@ service cloud.firestore {
       allow read: if isMember(resource.data.teamId);
       allow write: if false;
 
+      // Screenshots are read by the dashboard and written only by the API.
+      match /screens/{screenId} {
+        allow read: if isMember(
+          get(/databases/$(database)/documents/systems/$(systemId)).data.teamId
+        );
+        allow write: if false;
+      }
+
       match /versions/{versionId} {
         allow read: if isMember(
           get(/databases/$(database)/documents/systems/$(systemId)).data.teamId

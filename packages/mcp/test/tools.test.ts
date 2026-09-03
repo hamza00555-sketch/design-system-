@@ -1,6 +1,8 @@
 import { clearGlass } from "@miswadah/core/fixtures/clearGlass";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  addScreen,
+  screenContent,
   exportSystem,
   getDesignSystem,
   listVersions,
@@ -128,5 +130,80 @@ describe("history and export", () => {
     expect(await exportSystem(store, ctx, "design-md")).toContain("# Clear Glass");
     const json = JSON.parse(await exportSystem(store, ctx, "tokens-json"));
     expect(json.color.primary.$value).toBe("#2f6bff");
+  });
+});
+
+describe("screens", () => {
+  const png = Buffer.from("a".repeat(600)).toString("base64");
+
+  beforeEach(async () => {
+    await pushDesignSystem(store, ctx, clearGlass);
+  });
+
+  it("stores a screenshot and reports how many are held", async () => {
+    const out = await addScreen(store, ctx, {
+      name: "Dashboard",
+      description: "The main view",
+      data: png,
+      mimeType: "image/png",
+    });
+    expect(out).toContain("Saved \"Dashboard\"");
+    expect(out).toContain("1 of 8");
+  });
+
+  it("accepts a data: URL, because an agent sending one is being reasonable", async () => {
+    await addScreen(store, ctx, {
+      name: "Settings",
+      data: `data:image/png;base64,${png}`,
+      mimeType: "image/png",
+    });
+    expect(store.screens[0]?.data.startsWith("data:")).toBe(false);
+  });
+
+  it("replaces a screen of the same name instead of piling up", async () => {
+    await addScreen(store, ctx, { name: "Dashboard", data: png, mimeType: "image/png" });
+    await addScreen(store, ctx, { name: "Dashboard", data: png, mimeType: "image/webp" });
+    expect(store.screens).toHaveLength(1);
+    expect(store.screens[0]?.mimeType).toBe("image/webp");
+  });
+
+  it("refuses an image too large to store", async () => {
+    const huge = "a".repeat(700_000);
+    const out = await addScreen(store, ctx, { name: "Big", data: huge, mimeType: "image/png" });
+    expect(out).toContain("the limit is");
+    expect(store.screens).toHaveLength(0);
+  });
+
+  it("refuses a file that is not an image", async () => {
+    const out = await addScreen(store, ctx, {
+      name: "Notes",
+      data: png,
+      mimeType: "application/pdf",
+    });
+    expect(out).toContain("Unsupported image type");
+  });
+
+  it("needs a name, because an unnamed screenshot says nothing", async () => {
+    expect(await addScreen(store, ctx, { name: "  ", data: png, mimeType: "image/png" })).toContain(
+      "needs a name",
+    );
+  });
+
+  it("hands the screenshots to the agent as images", async () => {
+    await addScreen(store, ctx, { name: "Dashboard", data: png, mimeType: "image/png" });
+    const images = await screenContent(store, ctx);
+    expect(images).toEqual([{ type: "image", data: png, mimeType: "image/png" }]);
+  });
+
+  it("names them in the system text so the agent knows what it is looking at", async () => {
+    await addScreen(store, ctx, {
+      name: "Dashboard",
+      description: "The main view",
+      data: png,
+      mimeType: "image/png",
+    });
+    const body = await getDesignSystem(store, ctx);
+    expect(body).toContain("What the product looks like");
+    expect(body).toContain("Dashboard — The main view");
   });
 });

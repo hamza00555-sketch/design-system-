@@ -155,7 +155,9 @@
     "components": "Components",
     "rules": "Rules",
     "must": "Must",
-    "should": "Should"
+    "should": "Should",
+    "screens": "Screens",
+    "noScreens": "No screenshots yet. The extraction prompt asks your agent for them."
   },
   "common": {
     "loading": "Loading…",

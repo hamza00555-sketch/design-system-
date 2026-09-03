@@ -4,11 +4,13 @@ import { BRAND, DesignSystemSchema } from "@miswadah/core";
 import { z } from "zod";
 import type { ProjectContext, Store } from "./store.js";
 import {
+  addScreen,
   exportSystem,
   getDesignSystem,
   listVersions,
   pushDesignSystem,
   restoreVersion,
+  screenContent,
   verifyFiles,
 } from "./tools.js";
 
@@ -35,7 +37,13 @@ export function createMcpServer(store: Store, ctx: ProjectContext): McpServer {
         "UI: components, pages, styles, or markup with classes.",
       inputSchema: {},
     },
-    async () => text(await getDesignSystem(store, ctx)),
+    async () => {
+      // Words and pictures in one answer: the agent should not have to ask
+      // twice to know both what the values are and what they look like.
+      const body = await getDesignSystem(store, ctx);
+      const images = await screenContent(store, ctx);
+      return { content: [{ type: "text" as const, text: body }, ...images] };
+    },
   );
 
   server.registerTool(
@@ -73,6 +81,26 @@ export function createMcpServer(store: Store, ctx: ProjectContext): McpServer {
       inputSchema: { system: DesignSystemSchema },
     },
     async ({ system }) => text(await pushDesignSystem(store, ctx, system)),
+  );
+
+  server.registerTool(
+    "add_screen",
+    {
+      title: "Attach a screenshot of the product",
+      description:
+        "Store a screenshot of the real product so future generations can see " +
+        "it, not only read its token values. Run the app, capture the screens " +
+        "that carry the most of its character, and send each as base64. PNG, " +
+        "JPEG, or WebP, up to 400 KB — around 1200px wide is plenty.",
+      inputSchema: {
+        name: z.string().describe('What this screen is: "dashboard", "settings".'),
+        description: z.string().optional().describe("One line on what it shows."),
+        data: z.string().describe("The image, base64 encoded."),
+        mimeType: z.enum(["image/png", "image/jpeg", "image/webp"]),
+      },
+    },
+    async ({ name, description, data, mimeType }) =>
+      text(await addScreen(store, ctx, { name, description, data, mimeType })),
   );
 
   server.registerTool(

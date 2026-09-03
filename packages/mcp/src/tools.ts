@@ -8,7 +8,7 @@ import {
   verify,
   type FileInput,
 } from "@miswadah/core";
-import type { ProjectContext, Store } from "./store.js";
+import { MAX_SCREEN_BYTES, MAX_SCREENS, type ProjectContext, type Screen, type Store } from "./store.js";
 
 /**
  * The three things an agent can do with a design system: read it, check its
@@ -26,10 +26,89 @@ export async function getDesignSystem(store: Store, ctx: ProjectContext): Promis
   const current = await store.getCurrent(ctx);
   await store.touchProject(ctx);
   if (!current) return NO_SYSTEM;
+  const screens = await store.listScreens(ctx);
   return [
     `<!-- ${ctx.projectName} · v${current.n} · ${current.tokenCount} tokens -->`,
     renderForAgent(current.system),
+    describeScreens(screens),
   ].join("\n");
+}
+
+/**
+ * Screens, rendered as MCP image content.
+ *
+ * The point of storing them is that a vision-capable agent can look at the
+ * product before it adds to it — a caption describing a screenshot would be
+ * worth much less than the screenshot.
+ */
+export async function screenContent(
+  store: Store,
+  ctx: ProjectContext,
+): Promise<{ type: "image"; data: string; mimeType: string }[]> {
+  const screens = await store.listScreens(ctx);
+  return screens.map((screen) => ({
+    type: "image" as const,
+    data: screen.data,
+    mimeType: screen.mimeType,
+  }));
+}
+
+export function describeScreens(screens: Screen[]): string {
+  if (screens.length === 0) return "";
+  const lines = screens.map(
+    (screen) => `- ${screen.name}${screen.description ? ` — ${screen.description}` : ""}`,
+  );
+  return [
+    "",
+    "## What the product looks like",
+    "The images attached to this response are screenshots of the real product.",
+    "Match their density, weight, and mood — not only the token values.",
+    ...lines,
+  ].join("\n");
+}
+
+export async function addScreen(
+  store: Store,
+  ctx: ProjectContext,
+  input: { name: string; description?: string; data: string; mimeType: string },
+): Promise<string> {
+  const name = input.name?.trim();
+  if (!name) return "A screen needs a name — what part of the product is this?";
+
+  const mimeType = input.mimeType?.trim().toLowerCase();
+  if (!/^image\/(png|jpeg|webp)$/.test(mimeType ?? "")) {
+    return `Unsupported image type ${mimeType || "(none)"}. Use PNG, JPEG, or WebP.`;
+  }
+
+  // Strip a data: prefix if the caller sent one; both shapes are reasonable.
+  const data = (input.data ?? "").replace(/^data:[^,]+,/, "").trim();
+  if (!data) return "The image was empty.";
+
+  const bytes = Math.floor((data.length * 3) / 4);
+  if (bytes > MAX_SCREEN_BYTES) {
+    return (
+      `That image is ${Math.round(bytes / 1000)} KB; the limit is ` +
+      `${MAX_SCREEN_BYTES / 1000} KB. Re-encode it as WebP, around 1200px wide.`
+    );
+  }
+
+  const existing = await store.listScreens(ctx);
+  if (existing.length >= MAX_SCREENS && !existing.some((screen) => screen.name === name)) {
+    return (
+      `This system already has ${MAX_SCREENS} screens, which is the limit. ` +
+      `Replace one by using its exact name, or remove one first.`
+    );
+  }
+
+  const saved = await store.putScreen(ctx, {
+    name,
+    description: input.description?.trim() || undefined,
+    data,
+    mimeType: mimeType!,
+    bytes,
+  });
+  const held = (await store.listScreens(ctx)).length;
+  return `Saved "${saved.name}" (${Math.round(bytes / 1000)} KB). ${held} of ${MAX_SCREENS} screens.`;
 }
 
 export async function verifyFiles(

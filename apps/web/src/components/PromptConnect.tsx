@@ -122,6 +122,17 @@ Shape:
 Every token value is {"value": "..."} with an optional "usage". Report the
 version number and token count that come back.
 
+Then attach screenshots of the real product. The tokens carry the values; the
+screenshots carry the look, and a later agent can see them. Run the app, take
+2-4 shots of the screens that carry the most of its character, and send each:
+
+POST ${base}/api/systems/screens
+Authorization: Bearer ${apiKey}
+Body: {"name":"dashboard","description":"the main view","data":"<base64>","mimeType":"image/webp"}
+
+WebP around 1200px wide, under 400 KB each, no data: prefix needed. If you
+cannot run the app, skip this — do not invent screenshots.
+
 To check a file against the system afterwards:
 POST ${base}/api/systems/verify with {"files":[{"path":"...","content":"..."}]}`;
 }

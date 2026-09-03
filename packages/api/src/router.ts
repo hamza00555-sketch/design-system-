@@ -1,5 +1,6 @@
 import { BRAND } from "@miswadah/core";
 import {
+  addScreen,
   getDesignSystem,
   handleMcpHttp,
   pushDesignSystem,
@@ -286,6 +287,19 @@ export async function handleApiRequest(
         }
         return;
       }
+      if (path === "/api/systems/screens") {
+        const body = (req.body ?? {}) as Json;
+        res.status(200).json({
+          result: await addScreen(store, ctx, {
+            name: String(body.name ?? ""),
+            description: body.description ? String(body.description) : undefined,
+            data: String(body.data ?? ""),
+            mimeType: String(body.mimeType ?? ""),
+          }),
+        });
+        return;
+      }
+
       if (path === "/api/systems/verify") {
         const body = (req.body ?? {}) as Json;
         const files = Array.isArray(body.files) ? (body.files as never[]) : [];

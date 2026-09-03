@@ -1,5 +1,5 @@
 import { countTokens, parseDesignSystem, type DesignSystem, type SystemDiff, type VerifyResult } from "@miswadah/core";
-import type { ProjectContext, Store, StoredSystem, VersionRef } from "@miswadah/mcp";
+import type { ProjectContext, Screen, Store, StoredSystem, VersionRef } from "@miswadah/mcp";
 import type { Firestore } from "firebase-admin/firestore";
 import { FieldValue } from "firebase-admin/firestore";
 import { hashKey } from "./keys.js";
@@ -120,6 +120,43 @@ export class FirestoreStore implements Store {
       summary: result.summary,
       createdAt: FieldValue.serverTimestamp(),
     });
+  }
+
+  private screensRef(systemId: string) {
+    return this.db.collection("systems").doc(systemId).collection("screens");
+  }
+
+  async listScreens(ctx: ProjectContext): Promise<Screen[]> {
+    const snap = await this.screensRef(ctx.systemId).orderBy("name").get();
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      name: (doc.get("name") as string) ?? doc.id,
+      description: (doc.get("description") as string) ?? undefined,
+      data: (doc.get("data") as string) ?? "",
+      mimeType: (doc.get("mimeType") as string) ?? "image/png",
+      bytes: (doc.get("bytes") as number) ?? 0,
+      createdAt: (doc.get("createdAt") as string) ?? "",
+    }));
+  }
+
+  async putScreen(
+    ctx: ProjectContext,
+    screen: Omit<Screen, "id" | "createdAt">,
+  ): Promise<Screen> {
+    // Keyed by name, so re-running a capture replaces the shot rather than
+    // piling up near-identical ones until the limit is hit.
+    const id = screen.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+      || "screen";
+    const createdAt = new Date().toISOString();
+    await this.screensRef(ctx.systemId).doc(id).set({ ...screen, createdAt });
+    return { id, createdAt, ...screen };
+  }
+
+  async deleteScreen(ctx: ProjectContext, screenId: string): Promise<boolean> {
+    const ref = this.screensRef(ctx.systemId).doc(screenId);
+    if (!(await ref.get()).exists) return false;
+    await ref.delete();
+    return true;
   }
 
   async touchProject(ctx: ProjectContext): Promise<void> {

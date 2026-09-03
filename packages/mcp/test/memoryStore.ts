@@ -1,5 +1,5 @@
 import { countTokens, diffSystems, type DesignSystem, type SystemDiff, type VerifyResult } from "@miswadah/core";
-import type { ProjectContext, Store, StoredSystem, VersionRef } from "../src/store.js";
+import type { ProjectContext, Screen, Store, StoredSystem, VersionRef } from "../src/store.js";
 
 /** An in-memory Store, so the tools can be tested without a database. */
 export class MemoryStore implements Store {
@@ -63,4 +63,26 @@ export class MemoryStore implements Store {
   }
 
   async touchProject() {}
+
+  readonly screens: Screen[] = [];
+
+  async listScreens() {
+    return [...this.screens];
+  }
+
+  async putScreen(_ctx: ProjectContext, screen: Omit<Screen, "id" | "createdAt">) {
+    const id = screen.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const saved = { id, createdAt: "2026-01-01T00:00:00.000Z", ...screen };
+    const at = this.screens.findIndex((existing) => existing.id === id);
+    if (at === -1) this.screens.push(saved);
+    else this.screens[at] = saved;
+    return saved;
+  }
+
+  async deleteScreen(_ctx: ProjectContext, screenId: string) {
+    const at = this.screens.findIndex((screen) => screen.id === screenId);
+    if (at === -1) return false;
+    this.screens.splice(at, 1);
+    return true;
+  }
 }

@@ -81,6 +81,7 @@ describe("protocol", () => {
     const { body } = await rpc("tools/list", {});
     const names = body.result.tools.map((t: { name: string }) => t.name).sort();
     expect(names).toEqual([
+      "add_screen",
       "export_design_system",
       "get_design_system",
       "list_versions",
