@@ -21,7 +21,9 @@
     "loading": "Signing you in…",
     "required": "Sign in to see your design system.",
     "notAllowed": "This deployment is private. Ask its owner for an invitation.",
-    "signOutAndRetry": "Sign out and try another account"
+    "signOutAndRetry": "Sign out and try another account",
+    "workspaceFailed": "Could not load your workspace.",
+    "retry": "Try again"
   },
   "dashboard": {
     "greeting": "Welcome back",

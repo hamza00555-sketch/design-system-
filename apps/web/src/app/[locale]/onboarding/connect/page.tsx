@@ -32,6 +32,7 @@ function Connect() {
   const [now, setNow] = useState(() => Date.now());
 
   const mint = useCallback(async () => {
+    // Unreachable: AppShell does not render children without a workspace.
     if (!workspace) return;
     setPending(true);
     setError(null);

@@ -25,6 +25,7 @@ export function PromptConnect() {
 
   const create = async (event: React.FormEvent) => {
     event.preventDefault();
+    // Unreachable: AppShell does not render children without a workspace.
     if (!workspace) return;
     setPending(true);
     setError(null);

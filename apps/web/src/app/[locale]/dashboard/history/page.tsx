@@ -27,6 +27,7 @@ function History() {
   const [error, setError] = useState<string | null>(null);
 
   const restore = async (versionId: string) => {
+    // Unreachable: AppShell does not render children without a workspace.
     if (!workspace) return;
     setRestoring(versionId);
     setError(null);

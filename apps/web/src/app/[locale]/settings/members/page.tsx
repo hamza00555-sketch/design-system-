@@ -28,6 +28,7 @@ export default function MembersPage() {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    // Unreachable: AppShell does not render children without a workspace.
     if (!workspace) return;
     setPending(true);
     setError(null);
@@ -57,6 +58,7 @@ export default function MembersPage() {
   };
 
   const act = async (path: string, body: Record<string, unknown>) => {
+    // Unreachable: AppShell does not render children without a workspace.
     if (!workspace) return;
     setError(null);
     try {

@@ -29,6 +29,8 @@ interface AuthState {
   error: string | null;
   /** Signed in with an account this deployment does not admit. */
   notAllowed: boolean;
+  /** Try the workspace lookup again after a failure. */
+  retry: () => Promise<void>;
   signIn: (provider: "google" | "github") => Promise<void>;
   signOutNow: () => Promise<void>;
 }
@@ -43,33 +45,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [notAllowed, setNotAllowed] = useState(false);
 
+  const loadWorkspace = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Idempotent: finds the existing workspace, or creates one on first sign-in.
+      setWorkspace(await callApi<Workspace>("/api/me/bootstrap"));
+      setNotAllowed(false);
+    } catch (err) {
+      // A private deployment refusing an account is not an error to shout
+      // about — it is a sentence the person needs to read.
+      if (err instanceof ApiError && err.code === "not_allowed") {
+        setNotAllowed(true);
+      } else {
+        setError(err instanceof Error ? err.message : String(err));
+      }
+      setWorkspace(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!configured) return;
-    return onAuthStateChanged(auth(), async (next) => {
+    return onAuthStateChanged(auth(), (next) => {
       setUser(next);
       if (!next) {
         setWorkspace(null);
         setNotAllowed(false);
+        setError(null);
         setLoading(false);
         return;
       }
-      try {
-        // Idempotent: finds the existing workspace, or creates one on first sign-in.
-        setWorkspace(await callApi<Workspace>("/api/me/bootstrap"));
-        setNotAllowed(false);
-      } catch (err) {
-        // A private deployment refusing an account is not an error to shout
-        // about — it is a sentence the person needs to read.
-        if (err instanceof ApiError && err.code === "not_allowed") {
-          setNotAllowed(true);
-        } else {
-          setError(err instanceof Error ? err.message : String(err));
-        }
-      } finally {
-        setLoading(false);
-      }
+      void loadWorkspace();
     });
-  }, [configured]);
+  }, [configured, loadWorkspace]);
 
   const signIn = useCallback(async (which: "google" | "github") => {
     setError(null);
@@ -92,7 +102,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, workspace, loading, configured, error, notAllowed, signIn, signOutNow }}
+      value={{
+        user,
+        workspace,
+        loading,
+        configured,
+        error,
+        notAllowed,
+        retry: loadWorkspace,
+        signIn,
+        signOutNow,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -34,6 +34,7 @@ export default function BillingPage() {
   // The plan on the auth context is from sign-in; the team document is live, so
   // a Stripe webhook landing seconds after checkout updates this page itself.
   useEffect(() => {
+    // Unreachable: AppShell does not render children without a workspace.
     if (!workspace) return;
     return onSnapshot(doc(db(), "teams", workspace.teamId), (snap) => {
       setBilling({
@@ -50,6 +51,7 @@ export default function BillingPage() {
   const isPro = !BILLING_ENABLED || plan === "pro";
 
   const go = async (which: "checkout" | "portal") => {
+    // Unreachable: AppShell does not render children without a workspace.
     if (!workspace) return;
     setPending(which);
     setError(null);

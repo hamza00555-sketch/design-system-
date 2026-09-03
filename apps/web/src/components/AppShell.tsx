@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations("nav");
   const tCommon = useTranslations("common");
   const tAuth = useTranslations("auth");
-  const { user, loading, configured, notAllowed, signOutNow } = useAuth();
+  const { user, workspace, loading, configured, notAllowed, error, retry, signOutNow } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -44,6 +44,34 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           {tAuth("signOutAndRetry")}
         </button>
+      </div>
+    );
+  }
+
+  // Every action in the app is team-scoped, so without a workspace each one
+  // would silently do nothing. Say so once here rather than leaving seven
+  // buttons that look alive and are not.
+  if (error || !workspace) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 px-6">
+        <p className="text-sm">{tAuth("workspaceFailed")}</p>
+        {error ? <p className="text-xs text-fail">{error}</p> : null}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => void retry()}
+            className="rounded-md border border-line-strong px-3 py-1.5 text-sm transition hover:bg-raised"
+          >
+            {tAuth("retry")}
+          </button>
+          <button
+            type="button"
+            onClick={signOutNow}
+            className="rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-raised hover:text-ink"
+          >
+            {t("signOut")}
+          </button>
+        </div>
       </div>
     );
   }
