@@ -59,13 +59,14 @@ Skip section 3 entirely until you want to charge.
 ```bash
 npm i -g firebase-tools          # or use npx firebase
 firebase login
-firebase projects:create tokenwell-prod        # or create it in the console
+firebase projects:create miswadah              # or create it in the console
 ```
 
 Point the repo at it. `.firebaserc` currently holds the emulator project:
 
 ```bash
-firebase use --add               # pick tokenwell-prod, call the alias "prod"
+firebase use --add               # pick miswadah
+# .firebaserc in this repo already defaults to "miswadah" — this only adds an alias.
 ```
 
 Cloud Functions need the **Blaze** (pay-as-you-go) plan. At this traffic it
@@ -79,7 +80,7 @@ Console → **Authentication** → Get started → Sign-in method:
 - Enable **Google**.
 - Enable **GitHub**. It asks for a Client ID and secret: create an OAuth App at
   <https://github.com/settings/developers>, and paste Firebase's callback URL
-  (`https://<project>.firebaseapp.com/__/auth/handler`) into the GitHub app's
+  (`https://miswadah.firebaseapp.com/__/auth/handler`) into the GitHub app's
   *Authorization callback URL*.
 
 Then Authentication → Settings → **Authorised domains** → add your Vercel
@@ -123,13 +124,13 @@ Playground (Firestore → Rules → Playground): a read of
 The deploy prints the function URL. Copy it — everything else points at it:
 
 ```
-https://us-central1-tokenwell-prod.cloudfunctions.net/api
+https://us-central1-miswadah.cloudfunctions.net/api
 ```
 
 Sanity check:
 
 ```bash
-curl https://us-central1-tokenwell-prod.cloudfunctions.net/api/api/health
+curl https://us-central1-miswadah.cloudfunctions.net/api/api/health
 # {"ok":true,"service":"tokenwell"}
 ```
 
@@ -175,10 +176,10 @@ Project Settings → Environment Variables. Add these to **Production**,
 
 ```
 NEXT_PUBLIC_FIREBASE_API_KEY=            # from 1.5
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=        # <project>.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=         # tokenwell-prod
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=miswadah.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=miswadah
 NEXT_PUBLIC_FIREBASE_APP_ID=             # 1:...:web:...
-NEXT_PUBLIC_TOKENWELL_API_BASE=https://us-central1-tokenwell-prod.cloudfunctions.net/api
+NEXT_PUBLIC_TOKENWELL_API_BASE=https://us-central1-miswadah.cloudfunctions.net/api
 ```
 
 Leave `NEXT_PUBLIC_FIREBASE_EMULATORS`, `NEXT_PUBLIC_BILLING_ENABLED`, and
@@ -229,7 +230,7 @@ You do not have to publish anything to npm to use this. On your own machines,
 point the CLI at your deployment with an environment variable:
 
 ```bash
-export TOKENWELL_API_BASE=https://us-central1-<project>.cloudfunctions.net/api
+export TOKENWELL_API_BASE=https://us-central1-miswadah.cloudfunctions.net/api
 node /path/to/design-system-/packages/cli/dist/cli.js init --code XXXX-XXXX
 ```
 
