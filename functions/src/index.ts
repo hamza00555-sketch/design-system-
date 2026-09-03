@@ -15,6 +15,7 @@ interface Response {
   status(code: number): Response;
   json(body: unknown): unknown;
 }
+import { canBootstrap } from "./access.js";
 import { canManageTeam, memberRole, verifyCaller, type Caller } from "./auth.js";
 import { applyStripeEvent, stripeGateway } from "./billing.js";
 import { billingEnabled } from "./plans.js";
@@ -57,6 +58,13 @@ const fail = (res: Response, status: number, error: string, code: string) => {
 /** Handlers that need a signed-in person but no particular team. */
 const AUTHED: Record<string, (ctx: AuthedCtx) => Promise<void>> = {
   "/api/me/bootstrap": async ({ res, caller }) => {
+    // Signing in is not the same as being allowed in: Firebase Auth will make
+    // an account for anyone, so the door is here.
+    const access = await canBootstrap(db, caller);
+    if (!access.allowed) {
+      fail(res, 403, access.error, access.code);
+      return;
+    }
     res.status(200).json(await bootstrapWorkspace(db, caller));
   },
 

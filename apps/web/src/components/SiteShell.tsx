@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
+import { PUBLIC_SITE } from "@/lib/site";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 
 /**
@@ -19,12 +20,16 @@ export function SiteShell({ children }: { children: ReactNode }) {
           tokenwell
         </Link>
         <nav className="flex flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-          <Link href="/use-cases/design-review" className="hover:text-ink">
-            {t("useCases")}
-          </Link>
-          <Link href="/pricing" className="hover:text-ink">
-            {t("pricing")}
-          </Link>
+          {PUBLIC_SITE ? (
+            <>
+              <Link href="/use-cases/design-review" className="hover:text-ink">
+                {t("useCases")}
+              </Link>
+              <Link href="/pricing" className="hover:text-ink">
+                {t("pricing")}
+              </Link>
+            </>
+          ) : null}
         </nav>
         <LocaleSwitcher />
         <Link href="/sign-in" className="text-sm text-muted hover:text-ink">

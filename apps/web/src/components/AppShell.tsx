@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations("nav");
   const tCommon = useTranslations("common");
   const tAuth = useTranslations("auth");
-  const { user, loading, configured, signOutNow } = useAuth();
+  const { user, loading, configured, notAllowed, signOutNow } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -33,6 +33,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!configured) return <NotConfigured />;
   if (loading) return <Centered>{tCommon("loading")}</Centered>;
   if (!user) return <Centered>{tAuth("required")}</Centered>;
+  if (notAllowed) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 px-6">
+        <p className="text-sm">{tAuth("notAllowed")}</p>
+        <button
+          type="button"
+          onClick={signOutNow}
+          className="self-start rounded-md border border-line-strong px-3 py-1.5 text-sm text-muted transition hover:bg-raised hover:text-ink"
+        >
+          {tAuth("signOutAndRetry")}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-6">

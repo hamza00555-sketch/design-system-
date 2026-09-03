@@ -19,7 +19,9 @@
     "note": "No passwords. We never see one.",
     "failed": "Sign-in failed. Try again.",
     "loading": "Signing you in…",
-    "required": "Sign in to see your design system."
+    "required": "Sign in to see your design system.",
+    "notAllowed": "This deployment is private. Ask its owner for an invitation.",
+    "signOutAndRetry": "Sign out and try another account"
   },
   "dashboard": {
     "greeting": "Welcome back",

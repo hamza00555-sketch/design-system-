@@ -56,6 +56,14 @@ apps/web/       the site and dashboard, in Arabic and English
 scripts/        local dev server — no emulator, no Java
 ```
 
+### Private by default
+
+The first person to sign in claims the instance; after that, sign-up is refused
+and the only way in is an invitation. No configuration, and it fails closed.
+`ALLOWED_EMAILS` admits more addresses, `OPEN_SIGNUPS=1` runs it as a public
+product, and `NEXT_PUBLIC_PUBLIC_SITE=1` puts the landing page back in front of
+the dashboard.
+
 ### Teams and billing
 
 **Billing is off by default.** The deployment is open: unlimited projects,

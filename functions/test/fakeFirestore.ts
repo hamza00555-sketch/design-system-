@@ -52,10 +52,12 @@ class FakeQuery {
     private readonly store: Map<string, Doc>,
     private readonly prefix: string,
     private readonly filters: [string, unknown][] = [],
+    /** Set for a collection-group query: match by collection name at any depth. */
+    private readonly group?: string,
   ) {}
 
   where(field: string, _op: string, value: unknown) {
-    return new FakeQuery(this.store, this.prefix, [...this.filters, [field, value]]);
+    return new FakeQuery(this.store, this.prefix, [...this.filters, [field, value]], this.group);
   }
 
   limit(_n: number) {
@@ -68,9 +70,15 @@ class FakeQuery {
 
   async get() {
     const depth = this.prefix.split("/").length;
+    const inScope = (path: string) => {
+      const segments = path.split("/");
+      return this.group
+        ? segments.at(-2) === this.group
+        : // Direct children only — a subcollection is not part of its parent query.
+          path.startsWith(`${this.prefix}/`) && segments.length === depth + 1;
+    };
     const docs = [...this.store.entries()]
-      // Direct children only — a subcollection is not part of its parent query.
-      .filter(([path]) => path.startsWith(`${this.prefix}/`) && path.split("/").length === depth + 1)
+      .filter(([path]) => inScope(path))
       .filter(([, data]) => this.filters.every(([field, value]) => data[field] === value))
       .map(([path, data]) => {
         const id = path.split("/").pop()!;
@@ -90,6 +98,10 @@ export class FakeFirestore {
 
   collection(name: string) {
     return makeCollection(this.data, name);
+  }
+
+  collectionGroup(name: string) {
+    return new FakeQuery(this.data, name, [], name);
   }
 
   /** Enough of a transaction for tests: the fake is single-threaded anyway. */

@@ -1,13 +1,38 @@
 # Deploying Tokenwell
 
 Two things ship: **Firebase** (the API, the MCP endpoint, the database and its
-rules) and **Vercel** (the web app). The CLI on npm is a third, optional step.
+rules) and **Vercel** (the web app). Using the CLI is a third step that needs
+no publishing.
 
 Do Firebase first — Vercel needs the function URL that Firebase prints.
 
 ---
 
-## 0. Billing is off by default
+## 0. This is a private deployment
+
+By default it is yours alone. The first person to sign in claims the instance;
+after that, sign-up is refused and the only way in is an invitation you send.
+That needs no configuration and fails closed — the safe direction if anyone
+forgets to set anything.
+
+Firebase Auth will happily create an account for anyone with a Google account
+who finds the URL, so this check lives in the API, not in the sign-in button.
+
+Two optional environment variables on the functions:
+
+```
+ALLOWED_EMAILS=you@example.com,you@work.com   # admit these addresses too
+OPEN_SIGNUPS=1                                # run it as a public product
+```
+
+Use `ALLOWED_EMAILS` if you sign in with more than one account — otherwise the
+second one is a stranger to it.
+
+The web app defaults to private as well: the root goes straight to the
+dashboard, and the marketing pages stay reachable by URL but stop being the
+front door. `NEXT_PUBLIC_PUBLIC_SITE=1` puts the landing page back in front.
+
+## 1. Billing is off by default
 
 This deployment is **open**: unlimited projects, unlimited teammates,
 unlimited generations, no card, no plan to choose. The plan machinery is
@@ -27,9 +52,9 @@ Skip section 3 entirely until you want to charge.
 
 ---
 
-## 1. Firebase — API, MCP endpoint, database rules
+## 2. Firebase — API, MCP endpoint, database rules
 
-### 1.1 Create the project
+### 2.1 Create the project
 
 ```bash
 npm i -g firebase-tools          # or use npx firebase
@@ -47,7 +72,7 @@ Cloud Functions need the **Blaze** (pay-as-you-go) plan. At this traffic it
 costs approximately nothing, but the project will not deploy functions without
 it: console → ⚙ → Usage and billing → Modify plan.
 
-### 1.2 Turn on sign-in
+### 2.2 Turn on sign-in
 
 Console → **Authentication** → Get started → Sign-in method:
 
@@ -61,13 +86,13 @@ Then Authentication → Settings → **Authorised domains** → add your Vercel
 domain (both `your-app.vercel.app` and any custom domain). Sign-in fails with
 `auth/unauthorized-domain` until you do.
 
-### 1.3 Create the database
+### 2.3 Create the database
 
 Console → **Firestore Database** → Create database → production mode → pick a
 region close to your users. Leave the default rules; you are about to replace
 them.
 
-### 1.4 Deploy the rules, the indexes, and the functions
+### 2.4 Deploy the rules, the indexes, and the functions
 
 The rules are the security boundary — they make the browser read-only, scope
 every read to the caller's team, and make `projectKeys` and `connectCodes`
@@ -108,19 +133,19 @@ curl https://us-central1-tokenwell-prod.cloudfunctions.net/api/api/health
 # {"ok":true,"service":"tokenwell"}
 ```
 
-### 1.5 Web app config
+### 2.5 Web app config
 
 Console → ⚙ Project settings → Your apps → **Add app** → Web. Copy the config
 values; Vercel wants four of them in the next section.
 
 ---
 
-## 2. Vercel — the web app
+## 3. Vercel — the web app
 
 The repo is a pnpm monorepo and the app is not at the root, so the project
 settings matter more than usual.
 
-### 2.1 Import
+### 3.1 Import
 
 <https://vercel.com/new> → import `hamza00555-sketch/design-system-`.
 
@@ -136,7 +161,7 @@ settings matter more than usual.
 "Include files outside the root directory" so the workspace packages
 (`packages/core`) are available to the build.
 
-### 2.2 Environment variables
+### 3.2 Environment variables
 
 Project Settings → Environment Variables. Add these to **Production**,
 **Preview**, and **Development**:
@@ -149,21 +174,22 @@ NEXT_PUBLIC_FIREBASE_APP_ID=             # 1:...:web:...
 NEXT_PUBLIC_TOKENWELL_API_BASE=https://us-central1-tokenwell-prod.cloudfunctions.net/api
 ```
 
-Leave `NEXT_PUBLIC_FIREBASE_EMULATORS` and `NEXT_PUBLIC_BILLING_ENABLED` unset.
+Leave `NEXT_PUBLIC_FIREBASE_EMULATORS`, `NEXT_PUBLIC_BILLING_ENABLED`, and
+`NEXT_PUBLIC_PUBLIC_SITE` unset — that is the private, billing-free default.
 
 These are `NEXT_PUBLIC_`, meaning they are baked into the browser bundle and
 are readable by anyone. That is correct for Firebase web config — it is an
 identifier, not a secret; the rules are what protect the data. Never put a
 Stripe secret key or a service-account key in a `NEXT_PUBLIC_` variable.
 
-### 2.3 Deploy
+### 3.3 Deploy
 
 Push to the branch, or hit Deploy. Then, once you know the domain:
 
 1. Add it to Firebase → Authentication → Authorised domains (section 1.2).
 2. Redeploy is not needed for that — it is a Firebase-side allowlist.
 
-### 2.4 Custom domain
+### 3.4 Custom domain
 
 Vercel → Project → Settings → Domains → add `tokenwell.design`. Vercel prints
 the DNS records; add them at your registrar. Then add the custom domain to the
@@ -171,7 +197,7 @@ Firebase authorised domains list too.
 
 ---
 
-## 3. Stripe — only when you want to charge
+## 4. Stripe — only when you want to charge
 
 Skipped while billing is off. When the time comes:
 
@@ -190,26 +216,26 @@ that matters.
 
 ---
 
-## 4. The CLI on npm
+## 5. The CLI
 
-`packages/cli/src/config.ts` carries the default API base. Point it at your
-deployment before publishing — a published CLI talking to the wrong host is the
-one mistake here that reaches other people's machines.
-
-```bash
-pnpm --filter tokenwell exec npm pack --dry-run   # 6 files, no source, no keys
-pnpm --filter tokenwell publish --access public
-```
-
-Anyone can override it without a republish:
+You do not have to publish anything to npm to use this. On your own machines,
+point the CLI at your deployment with an environment variable:
 
 ```bash
-TOKENWELL_API_BASE=https://your-api npx tokenwell init
+export TOKENWELL_API_BASE=https://us-central1-<project>.cloudfunctions.net/api
+node /path/to/design-system-/packages/cli/dist/cli.js init --code XXXX-XXXX
 ```
+
+Or `pnpm --filter tokenwell exec npm link` once, and then `tokenwell init`
+works anywhere on that machine.
+
+If you ever do publish it, set the default API base in
+`packages/cli/src/config.ts` first — a published CLI talking to the wrong host
+is the one mistake here that reaches other people's machines.
 
 ---
 
-## 5. Check it end to end
+## 6. Check it end to end
 
 In a scratch repo, against the real deployment:
 
@@ -223,16 +249,17 @@ calls `get_design_system` first and `verify` after. Write a deliberate
 
 ---
 
-## Before you tell anyone about it
+## Before you rely on it
 
 - [ ] `firestore.rules` deployed — the Rules Playground denies a client read of
       `projectKeys`.
+- [ ] You signed in first, so the instance is claimed. Check that a second
+      account is refused with "This deployment is private".
 - [ ] Authorised domains include the production domain, or nobody can sign in.
 - [ ] `/api/health` answers on the deployed function URL.
-- [ ] The legal pages in `apps/web/src/content/legal.ts` have a real operating
-      entity, a real governing law, and a lawyer's read. They ship with a
-      visible draft banner until then.
-- [ ] Decide what happens to teams that connected many projects while billing
-      was off, if you later turn it on. Today the limit is only checked at
-      connect time, so everything already connected keeps working — that is a
-      deliberate grace, but it should be a decision someone made on purpose.
+- [ ] A repo connected, a system pushed, and one deliberate off-brand value
+      caught by verify.
+
+The legal pages ship with a visible draft banner. That is the right state for a
+private instance — ignore it. If you ever open this up, they need a real
+operating entity, a real governing law, and a lawyer's read first.

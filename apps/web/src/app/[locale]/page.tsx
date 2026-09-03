@@ -1,13 +1,17 @@
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { Cards, Receipt, Section, SiteShell, Steps } from "@/components/SiteShell";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { PUBLIC_SITE } from "@/lib/site";
 import { PricingCard } from "@/components/PricingCard";
 import { BILLING_ENABLED } from "@/lib/billing";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  // On a private instance the landing page is not what you want to see every
+  // time you open the app.
+  if (!PUBLIC_SITE) redirect({ href: "/dashboard", locale });
   return (
     <SiteShell>
       <Landing />
