@@ -60,15 +60,15 @@ Everything below can be done from a browser. Two ways, and you only need one:
 
 **A — Google Cloud Shell (simplest).** Open <https://shell.cloud.google.com>.
 It is a terminal in a browser tab, already signed in as your Google account, so
-there is no install and no `firebase login`. Paste:
+there is no install and no `firebase login`. Paste one line:
 
 ```bash
-git clone https://github.com/hamza00555-sketch/design-system-.git
-cd design-system- && git checkout claude/eyedropper-analysis-plan-63mnst
-npm i -g pnpm && pnpm install
-npx firebase deploy --only firestore:rules,firestore:indexes --project miswadah
-npx firebase deploy --only functions --project miswadah
+git clone -b claude/eyedropper-analysis-plan-63mnst https://github.com/hamza00555-sketch/design-system-.git && bash design-system-/scripts/deploy.sh
 ```
+
+The script checks you can reach the project, installs, deploys the rules and
+then the API, waits for it to answer, and prints the exact environment
+variables to paste into Vercel. If anything fails it says which step and why.
 
 **B — GitHub Actions (a button, after a one-time setup).** This repo has a
 **Deploy Firebase** workflow. To let it act as you:
