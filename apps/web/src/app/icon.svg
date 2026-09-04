@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Miswadah">
+  <!--
+    The box that holds your colours.
+
+    Five tokens, evenly spaced, inside one container: the whole product in one
+    mark. Drawn as geometry rather than exported from a raster so it stays
+    crisp from 1024px down to a 32px favicon.
+  -->
+  <rect width="1024" height="1024" fill="#151617"/>
+  <rect x="135" y="388" width="754" height="248" rx="124"
+        fill="none" stroke="#F9F5D8" stroke-width="18"/>
+  <g>
+    <rect x="266" y="443" width="40" height="138" rx="20" fill="#178CF9"/>
+    <rect x="379" y="443" width="40" height="138" rx="20" fill="#1EC19D"/>
+    <rect x="492" y="443" width="40" height="138" rx="20" fill="#FEAE06"/>
+    <rect x="605" y="443" width="40" height="138" rx="20" fill="#FD5753"/>
+    <rect x="718" y="443" width="40" height="138" rx="20" fill="#974FE0"/>
+  </g>
+</svg>
