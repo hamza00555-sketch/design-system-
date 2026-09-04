@@ -98,7 +98,7 @@ function ColorSection({
       <SectionTitle>{title}</SectionTitle>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {entries.map(([name, token]) => (
-          <div key={name} className="overflow-hidden rounded-lg border border-line">
+          <div key={name} className="min-w-0 overflow-hidden rounded-lg border border-line">
             <div className="h-24 w-full border-b border-line" style={{ background: token.value }} />
             <div className="p-3">
               <div className="truncate text-sm font-medium">{name}</div>
@@ -159,7 +159,7 @@ function RadiusSection({ title, tokens }: { title: string; tokens: Record<string
       <SectionTitle>{title}</SectionTitle>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {entries.map(([name, token]) => (
-          <div key={name} className="rounded-lg border border-line p-3">
+          <div key={name} className="min-w-0 rounded-lg border border-line p-3">
             <div className="flex h-20 items-center justify-center">
               <div
                 className="h-16 w-full border-2 border-ink bg-raised"
@@ -178,6 +178,29 @@ function RadiusSection({ title, tokens }: { title: string; tokens: Record<string
   );
 }
 
+/**
+ * The luminance of a shadow's own colour, or null when we cannot read one.
+ *
+ * A shadow is only visible against a surface it can change. A near-black
+ * shadow needs a light stage; a glow needs a dark one. Guessing wrong makes
+ * the swatch look empty, which is exactly the bug this replaces.
+ */
+function shadowLuminance(value: string): number | null {
+  const rgba = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i.exec(value);
+  if (rgba) {
+    const [r, g, b] = [Number(rgba[1]), Number(rgba[2]), Number(rgba[3])];
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  }
+  const hex = /#([0-9a-f]{6}|[0-9a-f]{3})\b/i.exec(value);
+  if (hex) {
+    const h = hex[1].length === 3 ? hex[1].replace(/./g, (c) => c + c) : hex[1];
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  }
+  if (/\b(white|#fff)\b/i.test(value)) return 1;
+  return null;
+}
+
 function ShadowSection({ title, tokens }: { title: string; tokens: Record<string, DimensionToken> }) {
   const entries = Object.entries(tokens);
   if (entries.length === 0) return null;
@@ -185,23 +208,42 @@ function ShadowSection({ title, tokens }: { title: string; tokens: Record<string
   return (
     <section>
       <SectionTitle>{title}</SectionTitle>
-      {/* The extra padding is not decoration: a shadow needs room around the
-          card or it is clipped and reads as flat. */}
-      <div className="grid gap-6 rounded-lg border border-line bg-raised p-6 sm:grid-cols-2 lg:grid-cols-3">
-        {entries.map(([name, token]) => (
-          <div key={name} className="flex flex-col gap-2">
-            <div
-              className="flex h-24 items-center justify-center rounded-lg bg-surface"
-              style={{ boxShadow: token.value }}
-            >
-              <span className="text-sm text-muted">{name}</span>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {entries.map(([name, token]) => {
+          // Dark shadow on a light stage, glow on a dark one. These stages are
+          // deliberately fixed rather than themed: the point of the swatch is
+          // to show the shadow, and the viewer's colour scheme has no say in
+          // whether a black blur is visible.
+          const glow = (shadowLuminance(token.value) ?? 0) > 0.6;
+          const stage = glow ? "#101114" : "#eceded";
+          const card = glow ? "#1b1d22" : "#ffffff";
+          const ink = glow ? "#c9ccd1" : "#5b6068";
+
+          return (
+            <div key={name} className="flex min-w-0 flex-col gap-2">
+              {/* The padding is not decoration: a shadow needs room around the
+                  card or it is clipped and reads as flat. */}
+              <div
+                className="flex items-center justify-center rounded-lg border border-line p-6"
+                style={{ background: stage }}
+              >
+                <div
+                  className="flex h-20 w-full items-center justify-center rounded-lg text-sm"
+                  style={{ background: card, boxShadow: token.value, color: ink }}
+                >
+                  {name}
+                </div>
+              </div>
+              {/* Wrapped, not truncated: a two-part shadow is exactly the
+                  value worth reading, and a phone has no hover to reveal a
+                  title attribute. */}
+              <div className="ltr-content font-mono text-xs break-all text-faint">
+                {token.value}
+              </div>
+              {token.usage ? <div className="text-xs text-muted">{token.usage}</div> : null}
             </div>
-            <div className="ltr-content truncate font-mono text-xs text-faint" title={token.value}>
-              {token.value}
-            </div>
-            {token.usage ? <div className="text-xs text-muted">{token.usage}</div> : null}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
@@ -232,7 +274,15 @@ function BorderSection({ title, tokens }: { title: string; tokens: Record<string
   );
 }
 
-/** Type tokens, set in themselves. */
+/**
+ * Type tokens, set in themselves.
+ *
+ * The sample is deliberately two short words, one per script: a sentence gets
+ * truncated on a phone, and a truncated sample demonstrates nothing — least of
+ * all a line height, which needs two lines to be visible at all.
+ */
+const TYPE_SAMPLE = "Aa أبجد";
+
 function SampleSection({
   title,
   tokens,
@@ -246,7 +296,6 @@ function SampleSection({
 }) {
   const entries = Object.entries(tokens);
   if (entries.length === 0) return null;
-  const text = "The quick brown fox — نص تجريبي";
 
   return (
     <section>
@@ -256,8 +305,16 @@ function SampleSection({
           <div key={name} className="flex items-center gap-4 px-4 py-3">
             <Label name={name} value={token.value} />
             <span className="min-w-0 flex-1 overflow-hidden">
-              <span className="block truncate" style={sample(token.value)}>
-                {lines > 1 ? `${text} ${text}` : text}
+              <span className="block" style={sample(token.value)}>
+                {lines > 1 ? (
+                  <>
+                    {TYPE_SAMPLE}
+                    <br />
+                    {TYPE_SAMPLE}
+                  </>
+                ) : (
+                  TYPE_SAMPLE
+                )}
               </span>
             </span>
             <Usage text={token.usage} />
@@ -292,7 +349,7 @@ function ComponentSection({
         {components.map((component) => {
           const preview = safePreview(component.preview);
           return (
-            <div key={component.name} className="flex flex-col rounded-lg border border-line">
+            <div key={component.name} className="flex min-w-0 flex-col rounded-lg border border-line">
               {preview ? (
                 <div className="flex flex-wrap items-end gap-x-6 gap-y-4 border-b border-line bg-raised p-5">
                   {preview.states.map((state) => (
@@ -402,7 +459,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function Label({ name, value }: { name: string; value: string }) {
   return (
-    <span className="flex w-40 shrink-0 flex-col">
+    <span className="flex w-24 shrink-0 flex-col sm:w-40">
       <span className="truncate text-sm">{name}</span>
       <span className="ltr-content truncate font-mono text-xs text-faint">{value}</span>
     </span>
