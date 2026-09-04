@@ -7,6 +7,7 @@ import {
   addScreen,
   exportSystem,
   getDesignSystem,
+  getScreen,
   listVersions,
   pushDesignSystem,
   restoreVersion,
@@ -89,11 +90,17 @@ export function createMcpServer(store: Store, ctx: ProjectContext): McpServer {
       title: "Attach a screenshot of the product",
       description:
         "Store a screenshot of the real product so future generations can see " +
-        "it, not only read its token values. Run the app, capture the screens " +
-        "that carry the most of its character, and send each as base64. PNG, " +
-        "JPEG, or WebP, up to 400 KB — around 1200px wide is plenty.",
+        "it, not only read its token values. Run the app and capture every " +
+        "page it has — one call per page, named after its route — not just the " +
+        "prettiest few. PNG, JPEG, or WebP, up to 250 KB each and 40 in all; " +
+        "around 1200px wide is plenty.",
       inputSchema: {
-        name: z.string().describe('What this screen is: "dashboard", "settings".'),
+        name: z
+          .string()
+          .describe(
+            'The route this shows: "dashboard", "settings-members". Reusing a ' +
+              "name replaces that screen rather than adding another.",
+          ),
         description: z.string().optional().describe("One line on what it shows."),
         data: z.string().describe("The image, base64 encoded."),
         mimeType: z.enum(["image/png", "image/jpeg", "image/webp"]),
@@ -101,6 +108,36 @@ export function createMcpServer(store: Store, ctx: ProjectContext): McpServer {
     },
     async ({ name, description, data, mimeType }) =>
       text(await addScreen(store, ctx, { name, description, data, mimeType })),
+  );
+
+  server.registerTool(
+    "get_screen",
+    {
+      title: "Look at one screen of the product",
+      description:
+        "Fetch a single screenshot by name. get_design_system attaches only the " +
+        "first few; use this to see any of the others it listed.",
+      inputSchema: {
+        name: z.string().describe('The screen name, as listed: "settings-members".'),
+      },
+    },
+    async ({ name }) => {
+      const result = await getScreen(store, ctx, name);
+      return {
+        content: [
+          { type: "text" as const, text: result.text },
+          ...(result.image
+            ? [
+                {
+                  type: "image" as const,
+                  data: result.image.data,
+                  mimeType: result.image.mimeType,
+                },
+              ]
+            : []),
+        ],
+      };
+    },
   );
 
   server.registerTool(
@@ -130,10 +167,12 @@ export function createMcpServer(store: Store, ctx: ProjectContext): McpServer {
     {
       title: "Export the design system",
       description:
-        "Export the current system as a DESIGN.md file or W3C design-tokens " +
-        "JSON. Available on every plan, always.",
+        "Export the current system as a DESIGN.md file, W3C design-tokens " +
+        "JSON, or a style prompt — one self-contained block of text that " +
+        "reproduces this style in any agent, with nothing else attached. " +
+        "Available on every plan, always.",
       inputSchema: {
-        format: z.enum(["design-md", "tokens-json"]).default("design-md"),
+        format: z.enum(["design-md", "tokens-json", "style-prompt"]).default("design-md"),
       },
     },
     async ({ format }) => text(await exportSystem(store, ctx, format ?? "design-md")),

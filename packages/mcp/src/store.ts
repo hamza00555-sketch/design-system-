@@ -30,21 +30,30 @@ export interface StoredSystem extends VersionRef {
  * an agent that the app is dense and quiet rather than airy and loud, and MCP
  * can return images — so a screenshot is worth more here than another list.
  */
-export interface Screen {
+export interface ScreenMeta {
   id: string;
-  /** What this screen is: "dashboard", "workout in progress". */
+  /** What this screen is: "dashboard", "settings-members". */
   name: string;
   description?: string;
-  /** Base64, no data: prefix. */
-  data: string;
   mimeType: string;
   bytes: number;
   createdAt: string;
 }
 
-/** Images are capped so one screenshot cannot fill a database document. */
-export const MAX_SCREEN_BYTES = 400_000;
-export const MAX_SCREENS = 8;
+/** A screen with its pixels attached. Base64, no data: prefix. */
+export interface Screen extends ScreenMeta {
+  data: string;
+}
+
+export const MAX_SCREEN_BYTES = 250_000;
+export const MAX_SCREENS = 40;
+
+/**
+ * How many screens `get_design_system` attaches as images. Forty screenshots
+ * would bury the design system itself in the agent's context, so the rest are
+ * listed by name and fetched with `get_screen` when the agent wants one.
+ */
+export const MAX_INLINE_SCREENS = 6;
 
 /**
  * Everything the tools need from storage. Kept as an interface so the tools
@@ -65,7 +74,14 @@ export interface Store {
   restoreVersion(ctx: ProjectContext, versionId: string): Promise<VersionRef>;
   recordVerification(ctx: ProjectContext, result: VerifyResult): Promise<void>;
   touchProject(ctx: ProjectContext): Promise<void>;
-  listScreens(ctx: ProjectContext): Promise<Screen[]>;
-  putScreen(ctx: ProjectContext, screen: Omit<Screen, "id" | "createdAt">): Promise<Screen>;
+  /**
+   * Screens without their pixels. Metadata and image bytes are stored apart so
+   * that listing a whole app's worth of screens costs kilobytes, not megabytes
+   * — every caller here wants the names far more often than the images.
+   */
+  listScreens(ctx: ProjectContext): Promise<ScreenMeta[]>;
+  /** One screen with its image, fetched only when something will display it. */
+  getScreen(ctx: ProjectContext, screenId: string): Promise<Screen | null>;
+  putScreen(ctx: ProjectContext, screen: Omit<Screen, "id" | "createdAt">): Promise<ScreenMeta>;
   deleteScreen(ctx: ProjectContext, screenId: string): Promise<boolean>;
 }

@@ -4,11 +4,19 @@ import {
   renderForAgent,
   countTokens,
   toDesignMd,
+  toStylePrompt,
   toW3CTokens,
   verify,
   type FileInput,
 } from "@miswadah/core";
-import { MAX_SCREEN_BYTES, MAX_SCREENS, type ProjectContext, type Screen, type Store } from "./store.js";
+import {
+  MAX_INLINE_SCREENS,
+  MAX_SCREEN_BYTES,
+  MAX_SCREENS,
+  type ProjectContext,
+  type ScreenMeta,
+  type Store,
+} from "./store.js";
 
 /**
  * The three things an agent can do with a design system: read it, check its
@@ -39,31 +47,75 @@ export async function getDesignSystem(store: Store, ctx: ProjectContext): Promis
  *
  * The point of storing them is that a vision-capable agent can look at the
  * product before it adds to it — a caption describing a screenshot would be
- * worth much less than the screenshot.
+ * worth much less than the screenshot. Only the first few are attached: a
+ * whole app's worth of images would crowd out the system they illustrate, and
+ * the rest are one `get_screen` call away.
  */
 export async function screenContent(
   store: Store,
   ctx: ProjectContext,
 ): Promise<{ type: "image"; data: string; mimeType: string }[]> {
   const screens = await store.listScreens(ctx);
-  return screens.map((screen) => ({
-    type: "image" as const,
-    data: screen.data,
-    mimeType: screen.mimeType,
-  }));
+  const out: { type: "image"; data: string; mimeType: string }[] = [];
+  for (const meta of screens.slice(0, MAX_INLINE_SCREENS)) {
+    const screen = await store.getScreen(ctx, meta.id);
+    if (!screen?.data) continue;
+    out.push({ type: "image", data: screen.data, mimeType: screen.mimeType });
+  }
+  return out;
 }
 
-export function describeScreens(screens: Screen[]): string {
+/** One screen by name or id, for an agent that wants to look closer. */
+export async function getScreen(
+  store: Store,
+  ctx: ProjectContext,
+  nameOrId: string,
+): Promise<
+  | { text: string; image?: undefined }
+  | { text: string; image: { data: string; mimeType: string } }
+> {
+  const wanted = nameOrId.trim().toLowerCase();
+  const screens = await store.listScreens(ctx);
+  if (screens.length === 0) {
+    return { text: "This system has no screenshots yet." };
+  }
+  const match =
+    screens.find((screen) => screen.id.toLowerCase() === wanted) ??
+    screens.find((screen) => screen.name.toLowerCase() === wanted);
+  if (!match) {
+    return {
+      text:
+        `No screen called "${nameOrId}". This system has: ` +
+        `${screens.map((screen) => screen.name).join(", ")}.`,
+    };
+  }
+  const screen = await store.getScreen(ctx, match.id);
+  if (!screen?.data) return { text: `"${match.name}" is stored but its image is missing.` };
+  return {
+    text: `${screen.name}${screen.description ? ` — ${screen.description}` : ""}`,
+    image: { data: screen.data, mimeType: screen.mimeType },
+  };
+}
+
+export function describeScreens(screens: ScreenMeta[]): string {
   if (screens.length === 0) return "";
   const lines = screens.map(
     (screen) => `- ${screen.name}${screen.description ? ` — ${screen.description}` : ""}`,
   );
+  const overflow = screens.length - MAX_INLINE_SCREENS;
   return [
     "",
     "## What the product looks like",
     "The images attached to this response are screenshots of the real product.",
     "Match their density, weight, and mood — not only the token values.",
     ...lines,
+    ...(overflow > 0
+      ? [
+          "",
+          `Only the first ${MAX_INLINE_SCREENS} are attached. Call \`get_screen\` ` +
+            `with a name above to see any of the other ${overflow}.`,
+        ]
+      : []),
   ].join("\n");
 }
 
@@ -196,11 +248,16 @@ export async function restoreVersion(
 export async function exportSystem(
   store: Store,
   ctx: ProjectContext,
-  format: "design-md" | "tokens-json",
+  format: "design-md" | "tokens-json" | "style-prompt",
 ): Promise<string> {
   const current = await store.getCurrent(ctx);
   if (!current) return NO_SYSTEM;
-  return format === "design-md"
-    ? toDesignMd(current.system)
-    : JSON.stringify(toW3CTokens(current.system), null, 2);
+  switch (format) {
+    case "tokens-json":
+      return JSON.stringify(toW3CTokens(current.system), null, 2);
+    case "style-prompt":
+      return toStylePrompt(current.system);
+    default:
+      return toDesignMd(current.system);
+  }
 }

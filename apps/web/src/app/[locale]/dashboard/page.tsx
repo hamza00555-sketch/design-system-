@@ -4,6 +4,7 @@ import { countTokens } from "@miswadah/core";
 import { useFormatter, useTranslations } from "next-intl";
 import { AppShell } from "@/components/AppShell";
 import { ScreenGallery } from "@/components/ScreenGallery";
+import { StylePrompt } from "@/components/StylePrompt";
 import { TokenGrid } from "@/components/TokenGrid";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
@@ -95,6 +96,8 @@ function Dashboard() {
           </ul>
         )}
       </section>
+
+      <StylePrompt system={version.system} />
 
       <ScreenGallery systemId={workspace?.systemId ?? null} />
 

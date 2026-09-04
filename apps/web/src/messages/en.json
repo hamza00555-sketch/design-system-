@@ -38,7 +38,14 @@
     "recentChecks": "Recent verifications",
     "noChecks": "No generations verified yet. They appear here the moment an agent checks its work.",
     "checkPassed": "passed",
-    "checkFailed": "{count, plural, one {# off-brand value} other {# off-brand values}}"
+    "checkFailed": "{count, plural, one {# off-brand value} other {# off-brand values}}",
+    "stylePrompt": "Style prompt",
+    "stylePromptBody": "One block of text that reproduces this style anywhere — paste it into any agent.",
+    "copyPrompt": "Copy prompt",
+    "copied": "Copied",
+    "download": "Download",
+    "preview": "Preview",
+    "hide": "Hide"
   },
   "empty": {
     "title": "No design system yet",
@@ -157,7 +164,7 @@
     "must": "Must",
     "should": "Should",
     "screens": "Screens",
-    "noScreens": "No screenshots yet. The extraction prompt asks your agent for them."
+    "noScreens": "No screenshots yet. The extraction prompt asks your agent for one of every page."
   },
   "common": {
     "loading": "Loading…",

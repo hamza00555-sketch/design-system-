@@ -1,5 +1,12 @@
 import { countTokens, diffSystems, type DesignSystem, type SystemDiff, type VerifyResult } from "@miswadah/core";
-import type { ProjectContext, Screen, Store, StoredSystem, VersionRef } from "../src/store.js";
+import type {
+  ProjectContext,
+  Screen,
+  ScreenMeta,
+  Store,
+  StoredSystem,
+  VersionRef,
+} from "../src/store.js";
 
 /** An in-memory Store, so the tools can be tested without a database. */
 export class MemoryStore implements Store {
@@ -66,8 +73,16 @@ export class MemoryStore implements Store {
 
   readonly screens: Screen[] = [];
 
-  async listScreens() {
-    return [...this.screens];
+  /**
+   * Metadata only, exactly like Firestore: a test that got the image bytes
+   * back from a listing would pass while the real store returned nothing.
+   */
+  async listScreens(): Promise<ScreenMeta[]> {
+    return this.screens.map(({ data: _data, ...meta }) => ({ ...meta }));
+  }
+
+  async getScreen(_ctx: ProjectContext, screenId: string) {
+    return this.screens.find((screen) => screen.id === screenId) ?? null;
   }
 
   async putScreen(_ctx: ProjectContext, screen: Omit<Screen, "id" | "createdAt">) {
@@ -76,7 +91,8 @@ export class MemoryStore implements Store {
     const at = this.screens.findIndex((existing) => existing.id === id);
     if (at === -1) this.screens.push(saved);
     else this.screens[at] = saved;
-    return saved;
+    const { data: _data, ...meta } = saved;
+    return meta;
   }
 
   async deleteScreen(_ctx: ProjectContext, screenId: string) {

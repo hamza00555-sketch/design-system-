@@ -84,6 +84,7 @@ describe("protocol", () => {
       "add_screen",
       "export_design_system",
       "get_design_system",
+      "get_screen",
       "list_versions",
       "push_design_system",
       "restore_version",

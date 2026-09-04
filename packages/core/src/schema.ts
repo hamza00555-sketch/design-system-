@@ -43,6 +43,37 @@ export const TokensSchema = z.object({
   border: z.record(nonEmpty, DimensionTokenSchema).default({}),
 });
 
+/**
+ * One drawable state of a component: "default", "hover", "disabled".
+ *
+ * `styles` is plain CSS — property to value, as the component actually ships.
+ * It exists so the dashboard can *draw* the button instead of describing it;
+ * a rendered hover state answers "what does this look like" in a way that
+ * `variants: ["primary"]` never will. Values are sanitised before they reach
+ * a browser (see `safeStyles`), because they arrive from an agent.
+ */
+export const PreviewStateSchema = z.object({
+  name: nonEmpty,
+  styles: z.record(nonEmpty, nonEmpty).default({}),
+  note: z.string().optional(),
+});
+
+export const PreviewElementSchema = z.enum([
+  "button",
+  "badge",
+  "input",
+  "card",
+  "text",
+  "surface",
+]);
+
+export const ComponentPreviewSchema = z.object({
+  element: PreviewElementSchema.default("button"),
+  /** The text drawn inside the sample. */
+  label: z.string().optional(),
+  states: z.array(PreviewStateSchema).default([]),
+});
+
 export const ComponentSpecSchema = z.object({
   name: nonEmpty,
   description: z.string().default(""),
@@ -51,6 +82,7 @@ export const ComponentSpecSchema = z.object({
   tokensUsed: z.array(nonEmpty).default([]),
   dos: z.array(nonEmpty).default([]),
   donts: z.array(nonEmpty).default([]),
+  preview: ComponentPreviewSchema.optional(),
 });
 
 export const RuleSchema = z.object({
@@ -78,6 +110,9 @@ export type ColorToken = z.infer<typeof ColorTokenSchema>;
 export type DimensionToken = z.infer<typeof DimensionTokenSchema>;
 export type Tokens = z.infer<typeof TokensSchema>;
 export type ComponentSpec = z.infer<typeof ComponentSpecSchema>;
+export type ComponentPreview = z.infer<typeof ComponentPreviewSchema>;
+export type PreviewState = z.infer<typeof PreviewStateSchema>;
+export type PreviewElement = z.infer<typeof PreviewElementSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
 export type Source = z.infer<typeof SourceSchema>;
 export type DesignSystem = z.infer<typeof DesignSystemSchema>;

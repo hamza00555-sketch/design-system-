@@ -4,6 +4,7 @@ import { parseDesignSystem, type DesignSystem } from "@miswadah/core";
 import {
   collection,
   doc,
+  getDoc,
   limit as fsLimit,
   onSnapshot,
   orderBy,
@@ -44,8 +45,7 @@ export interface ScreenDoc {
   id: string;
   name: string;
   description: string | null;
-  /** Ready for an <img src>, assembled from the stored base64. */
-  src: string;
+  mimeType: string;
 }
 
 export interface MemberDoc {
@@ -208,6 +208,13 @@ export function useVerifications(systemId: string | null, max = 12) {
   );
 }
 
+/**
+ * Screen names and captions, without the pictures.
+ *
+ * The image bytes live in a `payload` subcollection, so this listener stays a
+ * few kilobytes even when a whole app has been captured. `useScreenImage`
+ * fetches a single picture when something is about to display it.
+ */
 export function useScreens(systemId: string | null) {
   return useLive<ScreenDoc[]>(
     systemId
@@ -220,9 +227,7 @@ export function useScreens(systemId: string | null) {
                   id: d.id,
                   name: (d.get("name") as string) ?? d.id,
                   description: (d.get("description") as string) ?? null,
-                  src: `data:${(d.get("mimeType") as string) ?? "image/png"};base64,${
-                    (d.get("data") as string) ?? ""
-                  }`,
+                  mimeType: (d.get("mimeType") as string) ?? "image/png",
                 })),
               ),
             (err) => onError(err.message),
@@ -231,6 +236,34 @@ export function useScreens(systemId: string | null) {
     [],
     [systemId],
   );
+}
+
+/** One screenshot as a data: URL, or null until it has been asked for. */
+export function useScreenImage(
+  systemId: string | null,
+  screen: ScreenDoc | null,
+  wanted: boolean,
+): string | null {
+  const [src, setSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!wanted || !systemId || !screen || src) return;
+    let live = true;
+    getDoc(doc(db(), "systems", systemId, "screens", screen.id, "payload", "image"))
+      .then((snap) => {
+        const data = snap.get("data") as string | undefined;
+        if (live && data) setSrc(`data:${screen.mimeType};base64,${data}`);
+      })
+      .catch(() => {
+        // A missing picture is not worth an error state: the caption still
+        // tells the reader which screen this is.
+      });
+    return () => {
+      live = false;
+    };
+  }, [wanted, systemId, screen, src]);
+
+  return src;
 }
 
 export function useMembers(teamId: string | null) {

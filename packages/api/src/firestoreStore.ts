@@ -1,5 +1,12 @@
 import { countTokens, parseDesignSystem, type DesignSystem, type SystemDiff, type VerifyResult } from "@miswadah/core";
-import type { ProjectContext, Screen, Store, StoredSystem, VersionRef } from "@miswadah/mcp";
+import type {
+  ProjectContext,
+  Screen,
+  ScreenMeta,
+  Store,
+  StoredSystem,
+  VersionRef,
+} from "@miswadah/mcp";
 import type { Firestore } from "firebase-admin/firestore";
 import { FieldValue } from "firebase-admin/firestore";
 import { hashKey } from "./keys.js";
@@ -14,6 +21,8 @@ import { hashKey } from "./keys.js";
  *   projects/{projectId}                  teamId, systemId, name, repoName, keyPrefix
  *   projectKeys/{sha256(key)}             projectId                              (O(1) auth)
  *   connectCodes/{code}                   teamId, systemId, expiresAt, usedAt
+ *   systems/{systemId}/screens/{id}       name, description, mimeType, bytes
+ *   systems/{systemId}/screens/{id}/payload/image   data (base64)
  *   verifications/{id}                    projectId, passed, violationCount
  */
 export class FirestoreStore implements Store {
@@ -126,35 +135,67 @@ export class FirestoreStore implements Store {
     return this.db.collection("systems").doc(systemId).collection("screens");
   }
 
-  async listScreens(ctx: ProjectContext): Promise<Screen[]> {
+  /**
+   * The index document carries only what a listing needs. The image itself
+   * lives one level down, so loading forty screen names costs forty small
+   * reads instead of ten megabytes of base64.
+   */
+  private payloadRef(systemId: string, screenId: string) {
+    return this.screensRef(systemId).doc(screenId).collection("payload").doc("image");
+  }
+
+  async listScreens(ctx: ProjectContext): Promise<ScreenMeta[]> {
     const snap = await this.screensRef(ctx.systemId).orderBy("name").get();
     return snap.docs.map((doc) => ({
       id: doc.id,
       name: (doc.get("name") as string) ?? doc.id,
       description: (doc.get("description") as string) ?? undefined,
-      data: (doc.get("data") as string) ?? "",
       mimeType: (doc.get("mimeType") as string) ?? "image/png",
       bytes: (doc.get("bytes") as number) ?? 0,
       createdAt: (doc.get("createdAt") as string) ?? "",
     }));
   }
 
+  async getScreen(ctx: ProjectContext, screenId: string): Promise<Screen | null> {
+    const [meta, payload] = await Promise.all([
+      this.screensRef(ctx.systemId).doc(screenId).get(),
+      this.payloadRef(ctx.systemId, screenId).get(),
+    ]);
+    if (!meta.exists) return null;
+    return {
+      id: meta.id,
+      name: (meta.get("name") as string) ?? meta.id,
+      description: (meta.get("description") as string) ?? undefined,
+      mimeType: (meta.get("mimeType") as string) ?? "image/png",
+      bytes: (meta.get("bytes") as number) ?? 0,
+      createdAt: (meta.get("createdAt") as string) ?? "",
+      data: (payload.get("data") as string) ?? "",
+    };
+  }
+
   async putScreen(
     ctx: ProjectContext,
     screen: Omit<Screen, "id" | "createdAt">,
-  ): Promise<Screen> {
+  ): Promise<ScreenMeta> {
     // Keyed by name, so re-running a capture replaces the shot rather than
     // piling up near-identical ones until the limit is hit.
     const id = screen.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
       || "screen";
     const createdAt = new Date().toISOString();
-    await this.screensRef(ctx.systemId).doc(id).set({ ...screen, createdAt });
-    return { id, createdAt, ...screen };
+    const { data, ...meta } = screen;
+    const batch = this.db.batch();
+    batch.set(this.screensRef(ctx.systemId).doc(id), { ...meta, createdAt });
+    batch.set(this.payloadRef(ctx.systemId, id), { data });
+    await batch.commit();
+    return { id, createdAt, ...meta };
   }
 
   async deleteScreen(ctx: ProjectContext, screenId: string): Promise<boolean> {
     const ref = this.screensRef(ctx.systemId).doc(screenId);
     if (!(await ref.get()).exists) return false;
+    // The payload is a subcollection, so deleting the index doc alone would
+    // orphan the image bytes.
+    await this.payloadRef(ctx.systemId, screenId).delete();
     await ref.delete();
     return true;
   }

@@ -27,11 +27,21 @@ generation against it before you ever see the result.
 
 | Tool | What it does |
 | --- | --- |
-| `get_design_system` | Tokens, components, and rules rendered for generation. |
+| `get_design_system` | Tokens, components, and rules rendered for generation — with the first few screenshots attached as images. |
 | `verify` | Checks written files: colours within ΔE 2, scales matched exactly. |
 | `push_design_system` | A new immutable version, with full history. |
+| `add_screen` / `get_screen` | Capture a screenshot of every page, and look at any one of them again. |
 | `list_versions` / `restore_version` | Inspect and roll back. |
-| `export_design_system` | `DESIGN.md` or W3C design-tokens JSON, any time. |
+| `export_design_system` | `DESIGN.md`, W3C design-tokens JSON, or the style prompt, any time. |
+
+### The style prompt
+
+Exports answer "how do I take my tokens elsewhere". The style prompt answers a
+different question: how do I get the *same look* out of an agent that has never
+heard of this product. It is the whole system — every value, every component
+state as literal CSS, every rule, and a checklist — as one block of text with
+no dependencies. Copy it from the dashboard, paste it into any chat, and the
+work comes back in the same style.
 
 ### Verification, precisely
 

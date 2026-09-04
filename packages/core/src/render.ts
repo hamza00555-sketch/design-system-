@@ -60,6 +60,12 @@ export function renderForAgent(system: DesignSystem): string {
       if (c.anatomy) out.push(`Anatomy: ${c.anatomy}`);
       if (c.variants.length) out.push(`Variants: ${c.variants.join(", ")}`);
       if (c.tokensUsed.length) out.push(`Tokens: ${c.tokensUsed.join(", ")}`);
+      for (const state of c.preview?.states ?? []) {
+        const css = Object.entries(state.styles)
+          .map(([property, value]) => `${property}: ${value}`)
+          .join("; ");
+        if (css) out.push(`${state.name}: ${css}`);
+      }
       for (const d of c.dos) out.push(`DO: ${d}`);
       for (const d of c.donts) out.push(`DON'T: ${d}`);
     }

@@ -5,12 +5,14 @@ import {
   screenContent,
   exportSystem,
   getDesignSystem,
+  getScreen,
   listVersions,
   pushDesignSystem,
   restoreVersion,
   verifyFiles,
 } from "../src/tools.js";
 import { MemoryStore } from "./memoryStore.js";
+import { MAX_INLINE_SCREENS, MAX_SCREENS } from "../src/store.js";
 
 const ctx = {
   projectId: "p1",
@@ -133,6 +135,66 @@ describe("history and export", () => {
   });
 });
 
+describe("get_screen", () => {
+  beforeEach(async () => {
+    await pushDesignSystem(store, ctx, clearGlass);
+    for (const name of ["Dashboard", "Settings", "Sign in"]) {
+      await addScreen(store, ctx, {
+        name,
+        data: Buffer.from(`pixels for ${name}`).toString("base64"),
+        mimeType: "image/webp",
+      });
+    }
+  });
+
+  it("returns the named screen's image", async () => {
+    const result = await getScreen(store, ctx, "Settings");
+    expect(result.text).toContain("Settings");
+    expect(result.image?.mimeType).toBe("image/webp");
+  });
+
+  it("matches on the stored id as well as the name", async () => {
+    expect((await getScreen(store, ctx, "sign-in")).image).toBeDefined();
+  });
+
+  it("lists what it does have when the name is wrong", async () => {
+    const result = await getScreen(store, ctx, "checkout");
+    expect(result.image).toBeUndefined();
+    expect(result.text).toContain("Dashboard");
+    expect(result.text).toContain("Settings");
+  });
+});
+
+describe("how many screens reach the agent at once", () => {
+  it("attaches only the first few and points at the rest by name", async () => {
+    await pushDesignSystem(store, ctx, clearGlass);
+    const names = Array.from({ length: MAX_INLINE_SCREENS + 3 }, (_, i) => `page-${i}`);
+    for (const name of names) {
+      await addScreen(store, ctx, {
+        name,
+        data: Buffer.from(name).toString("base64"),
+        mimeType: "image/webp",
+      });
+    }
+
+    expect(await screenContent(store, ctx)).toHaveLength(MAX_INLINE_SCREENS);
+    const described = await getDesignSystem(store, ctx);
+    // Every screen is still named, so the agent knows what it can ask for.
+    for (const name of names) expect(described).toContain(name);
+    expect(described).toContain("get_screen");
+  });
+});
+
+describe("export", () => {
+  it("hands back a style prompt that stands on its own", async () => {
+    await pushDesignSystem(store, ctx, clearGlass);
+    const out = await exportSystem(store, ctx, "style-prompt");
+    expect(out).toContain("Design everything you build in the style of");
+    expect(out).toContain("#2f6bff");
+    expect(out).toContain("Before you call it done");
+  });
+});
+
 describe("screens", () => {
   const png = Buffer.from("a".repeat(600)).toString("base64");
 
@@ -148,7 +210,7 @@ describe("screens", () => {
       mimeType: "image/png",
     });
     expect(out).toContain("Saved \"Dashboard\"");
-    expect(out).toContain("1 of 8");
+    expect(out).toContain(`1 of ${MAX_SCREENS}`);
   });
 
   it("accepts a data: URL, because an agent sending one is being reasonable", async () => {

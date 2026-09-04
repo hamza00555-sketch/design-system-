@@ -27,7 +27,16 @@ Produce a design system object with this shape:
     "components": [
       { "name": "Button", "description": "...", "anatomy": "...",
         "variants": ["primary"], "tokensUsed": ["color.primary"],
-        "dos": ["..."], "donts": ["..."] }
+        "dos": ["..."], "donts": ["..."],
+        "preview": {
+          "element": "button",
+          "label": "Save changes",
+          "states": [
+            { "name": "default",  "styles": { "background": "#2f6bff", "color": "#ffffff", "padding": "8px 14px", "borderRadius": "6px", "fontSize": "14px", "fontWeight": "500" } },
+            { "name": "hover",    "styles": { "background": "#2558d6", "color": "#ffffff", "padding": "8px 14px", "borderRadius": "6px", "fontSize": "14px", "fontWeight": "500" } },
+            { "name": "disabled", "styles": { "background": "#e6e8eb", "color": "#9aa1a9", "padding": "8px 14px", "borderRadius": "6px", "fontSize": "14px", "fontWeight": "500" } }
+          ]
+        } }
     ],
     "rules": [ { "id": "no-raw-color", "statement": "...", "severity": "must" } ]
   }
@@ -43,13 +52,28 @@ Rules for the extraction itself:
 - Write the usage note for a stranger: where this token belongs, in a phrase.
 - Record the rules the code already follows, even unwritten ones — one primary
   button per view, cards never nest, headings never skip a level.
+- Fill in `preview` for every component you list. It is what lets the system be
+  *drawn* rather than described: `element` is one of `button`, `badge`, `input`,
+  `card`, `text`, `surface`, and each state's `styles` is the plain CSS that
+  state actually ships — real values, not `var(--primary)`. Give the states the
+  component really has: default, hover, focus, disabled, error, selected.
 
 Then call the `push_design_system` tool on the `miswadah` MCP server with the
 object as `system`. Report back the version number and the token count.
 
 Finally, attach screenshots. The tokens carry the values; the screenshots carry
-the look, and a later agent can see them where it cannot see a hex code. Run
-the app, capture the two to four screens that carry the most of its character,
-and call `add_screen` for each — WebP around 1200px wide, under 400 KB.
+the look, and a later agent can see them where it cannot see a hex code.
+
+Run the app and capture **one screenshot of every page it has**. Walk the
+router, write down every route, and take a shot of each — not just the two or
+three prettiest. The empty state, the settings page, the sign-in screen and the
+error page are part of the style too, and they are usually the ones a later
+agent gets wrong. Where a page has a second shape worth seeing (a filled list
+against its empty state, a modal open) capture both and name them apart.
+
+Call `add_screen` once per shot, naming each after its route — `dashboard`,
+`settings-members`, `sign-in` — so that re-running this replaces the old shot
+instead of duplicating it. WebP around 1200px wide, under 250 KB each; up to 40
+screens are kept.
 
 If you cannot run the app, skip this step. Do not invent screenshots.

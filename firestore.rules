@@ -25,11 +25,20 @@ service cloud.firestore {
       allow write: if false;
 
       // Screenshots are read by the dashboard and written only by the API.
+      // The image bytes sit in a subcollection so the gallery can list forty
+      // screens cheaply and fetch each picture only when it is shown.
       match /screens/{screenId} {
         allow read: if isMember(
           get(/databases/$(database)/documents/systems/$(systemId)).data.teamId
         );
         allow write: if false;
+
+        match /payload/{payloadId} {
+          allow read: if isMember(
+            get(/databases/$(database)/documents/systems/$(systemId)).data.teamId
+          );
+          allow write: if false;
+        }
       }
 
       match /versions/{versionId} {

@@ -1,6 +1,6 @@
 "use client";
 
-import { toDesignMd, toW3CTokens, type DesignSystem } from "@miswadah/core";
+import { toDesignMd, toStylePrompt, toW3CTokens, type DesignSystem } from "@miswadah/core";
 
 /**
  * Export runs in the browser: the version document already holds the whole
@@ -16,6 +16,15 @@ export function downloadTokensJson(system: DesignSystem): void {
     `${slug(system.meta.name)}-tokens.json`,
     JSON.stringify(toW3CTokens(system), null, 2),
     "application/json",
+  );
+}
+
+/** The portable style prompt, as a file you can keep next to the code. */
+export function downloadStylePrompt(system: DesignSystem): void {
+  save(
+    `${slug(system.meta.name)}-STYLE-PROMPT.md`,
+    toStylePrompt(system),
+    "text/markdown",
   );
 }
 

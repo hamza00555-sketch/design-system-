@@ -109,6 +109,17 @@ export function toDesignMd(system: DesignSystem): string {
       if (c.tokensUsed.length) {
         lines.push(`**Tokens** — ${c.tokensUsed.map((x) => `\`${x}\``).join(", ")}`, "");
       }
+      const states = c.preview?.states ?? [];
+      if (states.length > 0) {
+        lines.push("| State | CSS |", "| --- | --- |");
+        for (const state of states) {
+          const css = Object.entries(state.styles)
+            .map(([property, value]) => `${property}: ${value}`)
+            .join("; ");
+          lines.push(`| \`${state.name}\` | \`${css}\` |`);
+        }
+        lines.push("");
+      }
       for (const d of c.dos) lines.push(`- ✅ ${d}`);
       for (const d of c.donts) lines.push(`- ❌ ${d}`);
       if (c.dos.length || c.donts.length) lines.push("");

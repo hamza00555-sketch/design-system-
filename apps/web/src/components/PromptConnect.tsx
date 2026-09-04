@@ -100,6 +100,8 @@ Rules for the extraction:
 - Collapse near-duplicate values into one token. Three near-miss blues are one token plus two mistakes.
 - Keep the scales small and even. Seven spacing steps beat nineteen.
 - Record the rules the code already follows, even unwritten ones.
+- For every component, give each state its real CSS in "preview" so it can be
+  drawn: what a default button looks like, and a hover, and a disabled one.
 
 Then send it with a single request:
 
@@ -116,22 +118,38 @@ Shape:
    "color":{"primary":{"value":"#2f6bff","usage":"..."}},
    "typography":{"families":{},"sizes":{},"weights":{},"lineHeights":{},"letterSpacing":{}},
    "spacing":{},"radius":{},"shadow":{},"border":{}},
- "components":[{"name":"Button","description":"...","variants":[],"tokensUsed":[],"dos":[],"donts":[]}],
+ "components":[{"name":"Button","description":"...","variants":["primary"],
+   "tokensUsed":[],"dos":[],"donts":[],
+   "preview":{"element":"button","label":"Save changes","states":[
+     {"name":"default","styles":{"background":"#2f6bff","color":"#fff","padding":"8px 14px","borderRadius":"6px","fontSize":"14px","fontWeight":"500"}},
+     {"name":"hover","styles":{"background":"#2558d6","color":"#fff","padding":"8px 14px","borderRadius":"6px","fontSize":"14px","fontWeight":"500"}},
+     {"name":"disabled","styles":{"background":"#e6e8eb","color":"#9aa1a9","padding":"8px 14px","borderRadius":"6px","fontSize":"14px","fontWeight":"500"}}]}}],
  "rules":[{"id":"no-raw-color","statement":"...","severity":"must"}]}
 
-Every token value is {"value": "..."} with an optional "usage". Report the
-version number and token count that come back.
+Every token value is {"value": "..."} with an optional "usage". "preview" is
+optional but do fill it in: "element" is one of button, badge, input, card,
+text, surface, and each state's "styles" is the plain CSS that state actually
+ships, resolved to real values rather than variable names. Report the version
+number and token count that come back.
 
-Then attach screenshots of the real product. The tokens carry the values; the
-screenshots carry the look, and a later agent can see them. Run the app, take
-2-4 shots of the screens that carry the most of its character, and send each:
+Then attach screenshots. The tokens carry the values; the screenshots carry the
+look, and a later agent can see them. Run the app and take **one screenshot of
+every page it has** — walk the router, list every route, and capture each one.
+Do not stop at the two or three prettiest screens; the empty states, the
+settings page, and the error page are part of the style too. Where a page
+changes shape in a meaningful way (a filled list vs. its empty state, a modal
+open) capture both and name them apart.
+
+Send each with:
 
 POST ${base}/api/systems/screens
 Authorization: Bearer ${apiKey}
 Body: {"name":"dashboard","description":"the main view","data":"<base64>","mimeType":"image/webp"}
 
-WebP around 1200px wide, under 400 KB each, no data: prefix needed. If you
-cannot run the app, skip this — do not invent screenshots.
+Name each after its route — "dashboard", "settings-members", "sign-in" — so
+re-running this replaces the shot rather than duplicating it. WebP around
+1200px wide, under 250 KB each, no data: prefix needed, up to 40 screens.
+If you cannot run the app, skip this — do not invent screenshots.
 
 To check a file against the system afterwards:
 POST ${base}/api/systems/verify with {"files":[{"path":"...","content":"..."}]}`;

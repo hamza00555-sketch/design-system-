@@ -86,6 +86,34 @@ export const clearGlass: DesignSystem = {
       tokensUsed: ["color.primary", "radius.md", "spacing.sm", "typography.weights.medium"],
       dos: ["Use sentence case labels", "Keep the primary variant to one per screen"],
       donts: ["Never place two primary buttons side by side"],
+      preview: {
+        element: "button",
+        label: "Save changes",
+        states: [
+          {
+            name: "default",
+            styles: {
+              background: "#2f6bff",
+              color: "#ffffff",
+              padding: "8px 16px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "500",
+            },
+          },
+          {
+            name: "disabled",
+            styles: {
+              background: "#e6e8eb",
+              color: "#6b7280",
+              padding: "8px 16px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "500",
+            },
+          },
+        ],
+      },
     },
     {
       name: "Card",

@@ -1,11 +1,19 @@
-export type { ProjectContext, Screen, Store, StoredSystem, VersionRef } from "./store.js";
-export { MAX_SCREEN_BYTES, MAX_SCREENS } from "./store.js";
+export type {
+  ProjectContext,
+  Screen,
+  ScreenMeta,
+  Store,
+  StoredSystem,
+  VersionRef,
+} from "./store.js";
+export { MAX_INLINE_SCREENS, MAX_SCREEN_BYTES, MAX_SCREENS } from "./store.js";
 export {
   addScreen,
   describeScreens,
   screenContent,
   exportSystem,
   getDesignSystem,
+  getScreen,
   listVersions,
   pushDesignSystem,
   restoreVersion,
