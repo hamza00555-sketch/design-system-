@@ -25,7 +25,7 @@ interface Minted {
 function Connect() {
   const t = useTranslations("connect");
   const tOnboarding = useTranslations("onboarding");
-  const { workspace } = useAuth();
+  const { workspace, systemId } = useAuth();
   const [minted, setMinted] = useState<Minted | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -40,7 +40,7 @@ function Connect() {
       setMinted(
         await callApi<Minted>("/api/connect-codes", {
           teamId: workspace.teamId,
-          systemId: workspace.systemId,
+          systemId,
         }),
       );
     } catch (err) {

@@ -81,3 +81,29 @@ export async function bootstrapWorkspace(db: Firestore, caller: Caller): Promise
 
   return { teamId, systemId, plan: "free", teamName, role: "owner" };
 }
+
+/**
+ * A second design system for the same team.
+ *
+ * One team was always meant to hold several: a design system belongs to a
+ * product, and people have more than one product. The plumbing already carried
+ * a systemId everywhere — projects, versions, screens, verifications are all
+ * keyed by it — so this only had to stop being a single value derived from the
+ * team id.
+ */
+export async function createSystem(
+  db: Firestore,
+  input: { teamId: string; name: string; createdBy: string },
+): Promise<{ systemId: string; name: string }> {
+  const name = input.name.trim() || "Untitled system";
+  const ref = db.collection("systems").doc();
+  await ref.set({
+    teamId: input.teamId,
+    name,
+    versionCount: 0,
+    currentVersionId: null,
+    createdBy: input.createdBy,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  return { systemId: ref.id, name };
+}

@@ -65,6 +65,8 @@ export interface InviteDoc {
 
 export interface ProjectDoc {
   id: string;
+  /** Which design system this project pushes to. */
+  systemId: string;
   name: string;
   repoName: string | null;
   keyPrefix: string;
@@ -143,6 +145,39 @@ function toVersion(id: string, data: DocumentData): VersionDoc {
     createdAt: (data.createdAt as string) ?? "",
     system: parseDesignSystem(data.system),
   };
+}
+
+/**
+ * Every design system this team owns.
+ *
+ * Filtered on one field, so Firestore's automatic single-field index covers it
+ * and there is nothing to create by hand. Sorted here rather than in the query
+ * for the same reason.
+ */
+export function useTeamSystems(teamId: string | null) {
+  return useLive<SystemDoc[]>(
+    teamId
+      ? (onData, onError) =>
+          onSnapshot(
+            query(collection(db(), "systems"), where("teamId", "==", teamId)),
+            (snap) =>
+              onData(
+                snap.docs
+                  .map((d) => ({
+                    id: d.id,
+                    name: (d.get("name") as string) ?? "Design system",
+                    teamId: d.get("teamId") as string,
+                    currentVersionId: (d.get("currentVersionId") as string) ?? null,
+                    versionCount: (d.get("versionCount") as number) ?? 0,
+                  }))
+                  .sort((a, b) => a.name.localeCompare(b.name)),
+              ),
+            (err) => onError(err.message),
+          )
+      : null,
+    [],
+    [teamId],
+  );
 }
 
 export function useVersions(systemId: string | null, max = 50) {
@@ -327,6 +362,7 @@ export function useProjects(teamId: string | null) {
               onData(
                 snap.docs.map((d) => ({
                   id: d.id,
+                  systemId: (d.get("systemId") as string) ?? "",
                   name: (d.get("name") as string) ?? d.id,
                   repoName: (d.get("repoName") as string) ?? null,
                   keyPrefix: (d.get("keyPrefix") as string) ?? "",

@@ -29,6 +29,13 @@ interface AuthState {
   error: string | null;
   /** Signed in with an account this deployment does not admit. */
   notAllowed: boolean;
+  /**
+   * The system currently being viewed. A team holds several — one per product
+   * — so this is a choice, remembered per person in this browser, and it falls
+   * back to the team's default.
+   */
+  systemId: string | null;
+  setSystemId: (systemId: string) => void;
   /** Try the workspace lookup again after a failure. */
   retry: () => Promise<void>;
   signIn: (provider: "google" | "github") => Promise<void>;
@@ -44,6 +51,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(configured);
   const [error, setError] = useState<string | null>(null);
   const [notAllowed, setNotAllowed] = useState(false);
+  const [chosenSystemId, setChosenSystemId] = useState<string | null>(null);
+
+  const storageKey = user ? `miswadah.system.${user.uid}` : null;
+
+  useEffect(() => {
+    if (!storageKey) {
+      setChosenSystemId(null);
+      return;
+    }
+    try {
+      setChosenSystemId(window.localStorage.getItem(storageKey));
+    } catch {
+      // Private windows and blocked site data are not an error worth showing:
+      // the default system still works, it just is not remembered.
+      setChosenSystemId(null);
+    }
+  }, [storageKey]);
+
+  const setSystemId = useCallback(
+    (systemId: string) => {
+      setChosenSystemId(systemId);
+      if (!storageKey) return;
+      try {
+        window.localStorage.setItem(storageKey, systemId);
+      } catch {
+        // Remembering is a convenience; failing to is not worth interrupting.
+      }
+    },
+    [storageKey],
+  );
 
   const loadWorkspace = useCallback(async () => {
     setLoading(true);
@@ -109,6 +146,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         configured,
         error,
         notAllowed,
+        systemId: chosenSystemId ?? workspace?.systemId ?? null,
+        setSystemId,
         retry: loadWorkspace,
         signIn,
         signOutNow,

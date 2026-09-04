@@ -11,11 +11,11 @@ import { useSystem, useVersion } from "@/lib/data";
 
 export default function PromptPage() {
   const t = useTranslations("onboarding");
-  const { workspace } = useAuth();
+  const { workspace, systemId } = useAuth();
   const router = useRouter();
 
-  const system = useSystem(workspace?.systemId ?? null);
-  const current = useVersion(workspace?.systemId ?? null, system.data?.currentVersionId ?? null);
+  const system = useSystem(systemId);
+  const current = useVersion(systemId, system.data?.currentVersionId ?? null);
 
   // This page is a live wait, not a form: the moment the agent pushes, the
   // Firestore listener fires and we move on without anyone clicking anything.

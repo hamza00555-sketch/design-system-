@@ -12,9 +12,9 @@ import { useSystem, useVersion } from "@/lib/data";
 export default function ResultPage() {
   const t = useTranslations("onboarding");
   const tDash = useTranslations("dashboard");
-  const { workspace } = useAuth();
-  const system = useSystem(workspace?.systemId ?? null);
-  const current = useVersion(workspace?.systemId ?? null, system.data?.currentVersionId ?? null);
+  const { workspace, systemId } = useAuth();
+  const system = useSystem(systemId);
+  const current = useVersion(systemId, system.data?.currentVersionId ?? null);
 
   return (
     <OnboardingShell step={4}>

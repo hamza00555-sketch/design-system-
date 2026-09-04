@@ -28,8 +28,8 @@ function Version({ versionId }: { versionId: string }) {
   const tDash = useTranslations("dashboard");
   const tCommon = useTranslations("common");
   const format = useFormatter();
-  const { workspace } = useAuth();
-  const version = useVersion(workspace?.systemId ?? null, versionId);
+  const { workspace, systemId } = useAuth();
+  const version = useVersion(systemId, versionId);
 
   if (version.loading) return <p className="text-sm text-muted">{tCommon("loading")}</p>;
   if (!version.data) return <p className="text-sm text-muted">{t("empty")}</p>;

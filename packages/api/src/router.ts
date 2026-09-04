@@ -15,7 +15,7 @@ import { createProject, redeemConnectCode } from "./connect.js";
 import { mintConnectCode } from "./connectCodes.js";
 import { FirestoreStore } from "./firestoreStore.js";
 import { acceptInvite, inviteMember, removeMember, revokeInvite } from "./invites.js";
-import { bootstrapWorkspace } from "./teams.js";
+import { bootstrapWorkspace, createSystem } from "./teams.js";
 import { restoreVersionForTeam } from "./versions.js";
 
 /**
@@ -84,11 +84,33 @@ const AUTHED: Record<string, (ctx: AuthedCtx) => Promise<void>> = {
   },
 };
 
+/**
+ * The paths an agent reaches with a project key.
+ *
+ * Listed explicitly rather than matched by `/api/systems/` prefix: the team
+ * carries its own /api/systems routes, authenticated by a signed-in person
+ * rather than a key, and a prefix match silently swallowed them.
+ */
+export const AGENT_PATHS = new Set([
+  "/api/systems/current",
+  "/api/systems/push",
+  "/api/systems/screens",
+  "/api/systems/verify",
+]);
+
 /** Handlers that act on one team, and require membership in it. */
 const TEAM_SCOPED: Record<string, (ctx: TeamCtx) => Promise<void>> = {
   // Creating a project straight from the dashboard, so the connect screen can
   // hand over a ready prompt with a key in it. The CLI path still exists; this
   // is the one that needs no terminal.
+  // A team holds many design systems, one per product. The name is the only
+  // thing to decide; everything else hangs off the id this returns.
+  "/api/systems/create": async ({ db, res, caller, teamId, body }) => {
+    const name = String(body.name ?? "").trim();
+    if (!name) return fail(res, 400, "A system needs a name.", "bad_request");
+    res.status(201).json(await createSystem(db, { teamId, name, createdBy: caller.uid }));
+  },
+
   "/api/projects/create": async ({ db, res, caller, teamId, body }) => {
     const systemId = String(body.systemId ?? "");
     if (!systemId) return fail(res, 400, "systemId is required.", "bad_request");
@@ -258,7 +280,7 @@ export async function handleApiRequest(
     // handed a URL and a key in a prompt can use them with one fetch, without
     // a .mcp.json, a CLI, or a terminal. MCP stays the better path for
     // continuous work — it is what makes an agent verify without being asked.
-    if (path.startsWith("/api/systems/")) {
+    if (AGENT_PATHS.has(path)) {
       const key = header(req, "authorization")?.replace(/^Bearer\s+/i, "").trim();
       if (!key) {
         return fail(res, 401, "Missing Bearer project key.", "invalid_token");
@@ -309,7 +331,6 @@ export async function handleApiRequest(
         res.status(200).json({ result: await verifyFiles(store, ctx, files) });
         return;
       }
-      return fail(res, 404, "Not found.", "not_found");
     }
 
     if (path === "/api/health") {

@@ -16,7 +16,7 @@ import { API_BASE } from "@/lib/firebase";
  */
 export function PromptConnect() {
   const t = useTranslations("connect");
-  const { workspace } = useAuth();
+  const { workspace, systemId } = useAuth();
 
   const [name, setName] = useState("");
   const [pending, setPending] = useState(false);
@@ -32,7 +32,7 @@ export function PromptConnect() {
     try {
       const result = await callApi<{ apiKey: string }>("/api/projects/create", {
         teamId: workspace.teamId,
-        systemId: workspace.systemId,
+        systemId,
         name: name.trim() || "project",
       });
       setApiKey(result.apiKey);

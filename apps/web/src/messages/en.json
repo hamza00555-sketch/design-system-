@@ -99,10 +99,19 @@
   },
   "systems": {
     "title": "Systems",
-    "subtitle": "Every design system on this team.",
+    "subtitle": "One design system per product. Switch between them here.",
     "projects": "{count, plural, one {# project} other {# projects}}",
     "lastSeen": "Last agent call {date}",
-    "never": "no agent calls yet"
+    "never": "no agent calls yet",
+    "active": "· in use",
+    "open": "Open",
+    "use": "Use this one",
+    "empty": "nothing pushed yet",
+    "versions": "{count, plural, one {# version} other {# versions}}",
+    "newLabel": "New system",
+    "newPlaceholder": "My other app",
+    "create": "Create system",
+    "creating": "Creating…"
   },
   "settings": {
     "title": "Settings",

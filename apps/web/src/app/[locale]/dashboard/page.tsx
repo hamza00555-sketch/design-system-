@@ -23,11 +23,11 @@ function Dashboard() {
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
   const format = useFormatter();
-  const { workspace, user } = useAuth();
+  const { workspace, user, systemId } = useAuth();
 
-  const system = useSystem(workspace?.systemId ?? null);
-  const current = useVersion(workspace?.systemId ?? null, system.data?.currentVersionId ?? null);
-  const checks = useVerifications(workspace?.systemId ?? null);
+  const system = useSystem(systemId);
+  const current = useVersion(systemId, system.data?.currentVersionId ?? null);
+  const checks = useVerifications(systemId);
 
   if (system.loading || current.loading) {
     return <p className="text-sm text-muted">{tCommon("loading")}</p>;
@@ -99,7 +99,7 @@ function Dashboard() {
 
       <StylePrompt system={version.system} />
 
-      <ScreenGallery systemId={workspace?.systemId ?? null} />
+      <ScreenGallery systemId={systemId} />
 
       <TokenGrid system={version.system} />
     </div>

@@ -20,9 +20,9 @@ function History() {
   const t = useTranslations("history");
   const tCommon = useTranslations("common");
   const format = useFormatter();
-  const { workspace } = useAuth();
-  const system = useSystem(workspace?.systemId ?? null);
-  const versions = useVersions(workspace?.systemId ?? null);
+  const { workspace, systemId } = useAuth();
+  const system = useSystem(systemId);
+  const versions = useVersions(systemId);
   const [restoring, setRestoring] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +34,7 @@ function History() {
     try {
       await callApi("/api/versions/restore", {
         teamId: workspace.teamId,
-        systemId: workspace.systemId,
+        systemId,
         versionId,
       });
     } catch (err) {
