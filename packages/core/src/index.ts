@@ -7,6 +7,7 @@ export type { Candidate, CandidateKind } from "./extract.js";
 export { verify, formatReceipt } from "./verify.js";
 export type { FileInput, Violation, VerifyResult, VerifySummary } from "./verify.js";
 export { toDesignMd, toW3CTokens } from "./export.js";
+export type { PictureAccess } from "./export.js";
 export { renderForAgent } from "./render.js";
 export { toStylePrompt } from "./stylePrompt.js";
 export { safeStyles, safePreview } from "./preview.js";

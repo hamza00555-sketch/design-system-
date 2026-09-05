@@ -18,6 +18,7 @@ import { MAX_INLINE_SCREENS, MAX_SCREENS } from "../src/store.js";
 
 const ctx = {
   projectId: "p1",
+  scope: "write" as const,
   teamId: "t1",
   systemId: "s1",
   projectName: "acme-web",

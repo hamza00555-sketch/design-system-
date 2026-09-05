@@ -47,4 +47,15 @@ describe("the REST surface's contract", () => {
   it("leaves the team's own systems routes to the signed-in path", () => {
     expect(AGENT_PATHS.has("/api/systems/create")).toBe(false);
   });
+
+  /**
+   * The read key exists so it can be committed inside DESIGN.md. If it could
+   * push, that file would hand anyone who opens the repository the ability to
+   * replace the design system it documents.
+   */
+  it("keeps the mutating agent paths out of a read key's reach", () => {
+    const readable = ["/api/systems/current", "/api/systems/screen", "/api/systems/verify"];
+    for (const path of readable) expect(AGENT_PATHS.has(path)).toBe(true);
+    expect(AGENT_PATHS.has("/api/systems/push")).toBe(true);
+  });
 });

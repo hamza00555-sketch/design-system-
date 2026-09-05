@@ -8,7 +8,10 @@ import { StylePrompt } from "@/components/StylePrompt";
 import { TokenGrid } from "@/components/TokenGrid";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
-import { useVerifications, useVersion, useSystem } from "@/lib/data";
+import { useScreens, useVerifications, useVersion, useSystem } from "@/lib/data";
+import { callApi } from "@/lib/api";
+import { API_BASE } from "@/lib/firebase";
+import { useState } from "react";
 import { downloadDesignMd, downloadTokensJson } from "@/lib/download";
 
 export default function DashboardPage() {
@@ -28,6 +31,44 @@ function Dashboard() {
   const system = useSystem(systemId);
   const current = useVersion(systemId, system.data?.currentVersionId ?? null);
   const checks = useVerifications(workspace?.teamId ?? null, systemId);
+  const screens = useScreens(systemId);
+  const [exporting, setExporting] = useState(false);
+
+  /**
+   * DESIGN.md, with a way into the pictures.
+   *
+   * The key minted here can only read. This file gets committed, and a write
+   * key in it would let anyone who opens the repository overwrite the design
+   * system it describes.
+   */
+  const exportMd = async () => {
+    if (!current.data) return;
+    if (!workspace || !systemId || screens.data.length === 0) {
+      downloadDesignMd(current.data.system);
+      return;
+    }
+    setExporting(true);
+    try {
+      const { apiKey } = await callApi<{ apiKey: string }>("/api/systems/read-key", {
+        teamId: workspace.teamId,
+        systemId,
+        name: `${current.data.system.meta.name} · read-only`,
+      });
+      downloadDesignMd(current.data.system, {
+        base: API_BASE,
+        readKey: apiKey,
+        screens: screens.data.map((s) => ({
+          name: s.name,
+          description: s.description ?? undefined,
+        })),
+      });
+    } catch {
+      // A file without the pictures still beats no file.
+      downloadDesignMd(current.data.system);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (system.loading || current.loading) {
     return <p className="text-sm text-muted">{tCommon("loading")}</p>;
@@ -61,7 +102,7 @@ function Dashboard() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => downloadDesignMd(version.system)}>{t("exportMd")}</Button>
+          <Button onClick={exportMd}>{exporting ? t("exporting") : t("exportMd")}</Button>
           <Button onClick={() => downloadTokensJson(version.system)}>{t("exportJson")}</Button>
           <LinkButton href="/dashboard/history">{t("viewHistory")}</LinkButton>
           <LinkButton href="/onboarding/connect">{t("connectProject")}</LinkButton>

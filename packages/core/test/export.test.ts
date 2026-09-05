@@ -62,4 +62,22 @@ describe("diff", () => {
     ]);
     expect(diff.summary).toBe("~1");
   });
+
+  it("says nothing about pictures when there is no way to reach them", () => {
+    expect(toDesignMd(clearGlass)).not.toContain("Pictures of the product");
+  });
+
+  it("hands a reader the route to each picture, and the key to fetch it", () => {
+    const md = toDesignMd(clearGlass, {
+      base: "https://example.test",
+      readKey: "ms_live_readonly",
+      screens: [{ name: "dashboard", description: "the main view" }, { name: "sign-in" }],
+    });
+    expect(md).toContain("https://example.test/api/systems/screen");
+    expect(md).toContain("ms_live_readonly");
+    expect(md).toContain("`dashboard`");
+    expect(md).toContain("`sign-in`");
+    // A committed file must say why the key in it is safe to commit.
+    expect(md).toContain("read and");
+  });
 });

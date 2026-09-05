@@ -1,14 +1,20 @@
 "use client";
 
-import { toDesignMd, toStylePrompt, toW3CTokens, type DesignSystem } from "@miswadah/core";
+import {
+  toDesignMd,
+  toStylePrompt,
+  toW3CTokens,
+  type DesignSystem,
+  type PictureAccess,
+} from "@miswadah/core";
 
 /**
  * Export runs in the browser: the version document already holds the whole
  * system, so there is nothing to ask the server for. That is also why export
  * can be promised on every plan without a rate limit behind it.
  */
-export function downloadDesignMd(system: DesignSystem): void {
-  save(`${slug(system.meta.name)}-DESIGN.md`, toDesignMd(system), "text/markdown");
+export function downloadDesignMd(system: DesignSystem, access?: PictureAccess): void {
+  save(`${slug(system.meta.name)}-DESIGN.md`, toDesignMd(system, access), "text/markdown");
 }
 
 export function downloadTokensJson(system: DesignSystem): void {

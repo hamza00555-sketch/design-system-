@@ -46,7 +46,8 @@
     "download": "Download",
     "preview": "Preview",
     "hide": "Hide",
-    "backToDashboard": "Back to dashboard"
+    "backToDashboard": "Back to dashboard",
+    "exporting": "Preparing…"
   },
   "empty": {
     "title": "No design system yet",

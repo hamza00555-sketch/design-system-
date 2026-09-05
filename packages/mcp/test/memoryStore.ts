@@ -18,6 +18,7 @@ export class MemoryStore implements Store {
     private readonly keys: Record<string, ProjectContext> = {
       "ms_live_test": {
         projectId: "p1",
+        scope: "write" as const,
         teamId: "t1",
         systemId: "s1",
         projectName: "acme-web",

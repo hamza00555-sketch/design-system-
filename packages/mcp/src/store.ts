@@ -3,6 +3,15 @@ import type { DesignSystem, SystemDiff, VerifyResult } from "@miswadah/core";
 /** Who is calling — resolved from the project API key on every request. */
 export interface ProjectContext {
   projectId: string;
+  /**
+   * What this key may do.
+   *
+   * A read key is safe to commit: it can look at the system and its pictures
+   * and nothing else. That is what makes it possible to put one in an exported
+   * DESIGN.md, where a write key would hand anyone who opens the repository
+   * the ability to overwrite the design system.
+   */
+  scope: "read" | "write";
   teamId: string;
   systemId: string;
   projectName: string;

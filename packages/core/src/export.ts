@@ -66,8 +66,51 @@ function table(title: string, record: Record<string, DimensionToken>): string[] 
   return lines;
 }
 
+/**
+ * Where an agent reading this file can go and look at the product.
+ *
+ * The key here must be read-only. A DESIGN.md is committed, so a write key in
+ * it would hand anyone who opens the repository the ability to overwrite the
+ * design system it describes.
+ */
+export interface PictureAccess {
+  base: string;
+  readKey: string;
+  screens: { name: string; description?: string }[];
+}
+
+function pictureSection(access: PictureAccess): string[] {
+  const lines = [
+    "## Pictures of the product",
+    "",
+    "The values above say what this product is made of. These say what it",
+    "looks like. Fetch one when you are about to look at it — pulling them all",
+    "in at once spends the context you need for the work.",
+    "",
+    "```http",
+    `POST ${access.base}/api/systems/screen`,
+    `Authorization: Bearer ${access.readKey}`,
+    'Content-Type: application/json',
+    "",
+    '{"name": "dashboard"}',
+    "```",
+    "",
+    "The response carries `mimeType` and base64 `data`. This key can read and",
+    "nothing else, which is why it is safe to keep in this file.",
+    "",
+  ];
+  if (access.screens.length > 0) {
+    lines.push("| Screen | What it shows |", "| --- | --- |");
+    for (const screen of access.screens) {
+      lines.push(`| \`${screen.name}\` | ${screen.description ?? ""} |`);
+    }
+    lines.push("");
+  }
+  return lines;
+}
+
 /** A DESIGN.md a human would actually keep. */
-export function toDesignMd(system: DesignSystem): string {
+export function toDesignMd(system: DesignSystem, access?: PictureAccess): string {
   const t = system.tokens;
   const lines: string[] = [
     `# ${system.meta.name} — design system`,
@@ -125,6 +168,8 @@ export function toDesignMd(system: DesignSystem): string {
       if (c.dos.length || c.donts.length) lines.push("");
     }
   }
+
+  if (access) lines.push(...pictureSection(access));
 
   if (system.rules.length > 0) {
     lines.push("## Rules", "");

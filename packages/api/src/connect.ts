@@ -26,6 +26,8 @@ export interface CreateProjectInput {
   name: string;
   repoName?: string;
   createdBy?: string;
+  /** Defaults to a full key; "read" mints one safe to commit. */
+  scope?: "read" | "write";
 }
 
 /**
@@ -56,6 +58,7 @@ export async function createProject(
   batch.set(db.collection("projectKeys").doc(hashKey(apiKey)), {
     projectId: projectRef.id,
     teamId: input.teamId,
+    scope: input.scope ?? "write",
     createdAt: FieldValue.serverTimestamp(),
   });
   await batch.commit();

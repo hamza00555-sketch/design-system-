@@ -10,7 +10,14 @@ let base: string;
 
 beforeAll(async () => {
   await store.pushVersion(
-    { projectId: "p1", teamId: "t1", systemId: "s1", projectName: "acme-web", plan: "free" },
+    {
+      projectId: "p1",
+      scope: "write" as const,
+      teamId: "t1",
+      systemId: "s1",
+      projectName: "acme-web",
+      plan: "free",
+    },
     clearGlass,
     { added: [], removed: [], changed: [], identical: false, summary: "first" },
   );

@@ -46,7 +46,8 @@
     "download": "تنزيل",
     "preview": "معاينة",
     "hide": "إخفاء",
-    "backToDashboard": "رجوع للوحة"
+    "backToDashboard": "رجوع للوحة",
+    "exporting": "جارٍ التحضير…"
   },
   "empty": {
     "title": "لا يوجد نظام تصميم بعد",

@@ -17,6 +17,8 @@ export async function restoreVersionForTeam(
   const store = new FirestoreStore(db);
   const ctx = {
     projectId: "dashboard",
+    // The dashboard acts as the signed-in owner, not as a shared key.
+    scope: "write" as const,
     teamId,
     systemId,
     projectName: "dashboard",

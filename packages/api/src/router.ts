@@ -115,6 +115,21 @@ const TEAM_SCOPED: Record<string, (ctx: TeamCtx) => Promise<void>> = {
     res.status(201).json(await createSystem(db, { teamId, name, createdBy: caller.uid }));
   },
 
+  // A key that can only look. It goes into the exported DESIGN.md, which ends
+  // up committed, so it must never be able to change anything.
+  "/api/systems/read-key": async ({ db, res, caller, teamId, body }) => {
+    const systemId = String(body.systemId ?? "");
+    if (!systemId) return fail(res, 400, "systemId is required.", "bad_request");
+    const result = await createProject(db, {
+      teamId,
+      systemId,
+      name: String(body.name ?? "read-only"),
+      createdBy: caller.uid,
+      scope: "read",
+    });
+    res.status(201).json({ systemId, apiKey: result.apiKey });
+  },
+
   "/api/projects/create": async ({ db, res, caller, teamId, body }) => {
     const systemId = String(body.systemId ?? "");
     if (!systemId) return fail(res, 400, "systemId is required.", "bad_request");
@@ -292,6 +307,16 @@ export async function handleApiRequest(
       const ctx = await store.resolveKey(key);
       if (!ctx) {
         return fail(res, 401, "Unknown project key.", "invalid_token");
+      }
+
+      // A read key may look; only a write key may change anything. `verify`
+      // is allowed to both: it records that a check happened, which is the
+      // point of handing a read key to an agent in the first place.
+      const WRITES = new Set(["/api/systems/push"]);
+      const mutatesScreens =
+        path === "/api/systems/screens" && (req.method === "POST" || req.method === "DELETE");
+      if (ctx.scope === "read" && (WRITES.has(path) || mutatesScreens)) {
+        return fail(res, 403, "This key can read but not write.", "read_only");
       }
 
       if (path === "/api/systems/current") {

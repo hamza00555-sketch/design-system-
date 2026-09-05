@@ -40,6 +40,9 @@ export class FirestoreStore implements Store {
     const team = await this.db.collection("teams").doc(teamId).get();
     return {
       projectId,
+      // Keys minted before scopes existed are write keys, which is what they
+      // have always been — a missing field must not silently downgrade them.
+      scope: keyDoc.get("scope") === "read" ? "read" : "write",
       teamId,
       systemId: project.get("systemId") as string,
       projectName: (project.get("name") as string) ?? projectId,
