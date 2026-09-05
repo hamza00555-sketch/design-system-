@@ -3,7 +3,7 @@
 import { countTokens } from "@miswadah/core";
 import { useFormatter, useTranslations } from "next-intl";
 import { AppShell } from "@/components/AppShell";
-import { ScreenGallery } from "@/components/ScreenGallery";
+import { ScreensCard } from "@/components/ScreenGallery";
 import { StylePrompt } from "@/components/StylePrompt";
 import { TokenGrid } from "@/components/TokenGrid";
 import { Link } from "@/i18n/navigation";
@@ -99,7 +99,7 @@ function Dashboard() {
 
       <StylePrompt system={version.system} />
 
-      <ScreenGallery systemId={systemId} />
+      <ScreensCard systemId={systemId} />
 
       <TokenGrid system={version.system} />
     </div>

@@ -45,7 +45,8 @@
     "copied": "Copied",
     "download": "Download",
     "preview": "Preview",
-    "hide": "Hide"
+    "hide": "Hide",
+    "backToDashboard": "Back to dashboard"
   },
   "empty": {
     "title": "No design system yet",
@@ -178,7 +179,12 @@
     "screensLoading": "Loading screenshots…",
     "screensError": "Could not read this system's screenshots.",
     "imageMissing": "Screen metadata exists, but its image payload is missing.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "screenCount": "{count, plural, one {# screenshot} other {# screenshots}}",
+    "viewAll": "View all",
+    "viewGrid": "Grid",
+    "viewStack": "Stack",
+    "close": "Close"
   },
   "common": {
     "loading": "Loading…",

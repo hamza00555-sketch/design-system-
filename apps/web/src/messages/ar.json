@@ -45,7 +45,8 @@
     "copied": "تم النسخ",
     "download": "تنزيل",
     "preview": "معاينة",
-    "hide": "إخفاء"
+    "hide": "إخفاء",
+    "backToDashboard": "رجوع للوحة"
   },
   "empty": {
     "title": "لا يوجد نظام تصميم بعد",
@@ -178,7 +179,12 @@
     "screensLoading": "جارٍ تحميل اللقطات…",
     "screensError": "تعذّرت قراءة لقطات هذا النظام.",
     "imageMissing": "بيانات اللقطة موجودة، لكن ملف الصورة مفقود.",
-    "retry": "أعد المحاولة"
+    "retry": "أعد المحاولة",
+    "screenCount": "{count, plural, zero {لا لقطات} one {لقطة واحدة} two {لقطتان} few {# لقطات} many {# لقطة} other {# لقطة}}",
+    "viewAll": "عرض الكل",
+    "viewGrid": "شبكة",
+    "viewStack": "قائمة",
+    "close": "إغلاق"
   },
   "common": {
     "loading": "جارٍ التحميل…",
