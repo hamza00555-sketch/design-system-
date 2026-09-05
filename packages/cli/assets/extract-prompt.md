@@ -10,6 +10,7 @@ Produce a design system object with this shape:
   {
     "schemaVersion": 1,
     "meta": { "name": "<product name>", "source": "code" },
+    "stylePrompt": "<how this product looks and feels, in prose>",
     "tokens": {
       "color":   { "<name>": { "value": "<css color>", "usage": "<where it is used>" } },
       "typography": {
@@ -52,6 +53,14 @@ Rules for the extraction itself:
 - Write the usage note for a stranger: where this token belongs, in a phrase.
 - Record the rules the code already follows, even unwritten ones — one primary
   button per view, cards never nest, headings never skip a level.
+- Write `stylePrompt`: a paragraph or two describing how THIS product looks and
+  feels, in your own words, addressed to an agent that has never seen it. The
+  token values are captured separately and exactly — do not repeat them here.
+  Write down what the numbers cannot hold: is it dense or airy, quiet or loud,
+  sharp or soft? Where does colour get used, and where is it withheld? How much
+  motion is there? What would look wrong here even if every value was
+  technically on the scale? Be specific to this product; a paragraph that could
+  describe any app is worth nothing.
 - Fill in `preview` for every component you list. It is what lets the system be
   *drawn* rather than described: `element` is one of `button`, `badge`, `input`,
   `card`, `text`, `surface`, and each state's `styles` is the plain CSS that
@@ -61,19 +70,28 @@ Rules for the extraction itself:
 Then call the `push_design_system` tool on the `miswadah` MCP server with the
 object as `system`. Report back the version number and the token count.
 
-Finally, attach screenshots. The tokens carry the values; the screenshots carry
-the look, and a later agent can see them where it cannot see a hex code.
+Finally, attach pictures. The tokens carry the values; the pictures carry the
+look, and a later agent can see them where it cannot see a hex code.
 
-Run the app and capture **one screenshot of every page it has**. Walk the
-router, write down every route, and take a shot of each — not just the two or
-three prettiest. The empty state, the settings page, the sign-in screen and the
-error page are part of the style too, and they are usually the ones a later
-agent gets wrong. Where a page has a second shape worth seeing (a filled list
-against its empty state, a modal open) capture both and name them apart.
+**First choice — capture the real thing.** Run the app and take one screenshot
+of every page it has. Walk the router, write down every route, and take a shot
+of each — not just the two or three prettiest. The empty state, the settings
+page, the sign-in screen and the error page are part of the style too, and they
+are usually the ones a later agent gets wrong. Call `add_screen` once per shot
+with `kind: "capture"`.
 
-Call `add_screen` once per shot, naming each after its route — `dashboard`,
-`settings-members`, `sign-in` — so that re-running this replaces the old shot
-instead of duplicating it. WebP around 1200px wide, under 250 KB each; up to 40
-screens are kept.
+**Fallback — if you cannot run the app.** No build, no browser, no way to reach
+it: then generate images instead. Build mockups that carry this product's mood
+out of the tokens and components you just extracted, one per major screen you
+can infer from the code, and send them with `kind: "impression"`. Say in the
+description what each one is a mock of.
 
-If you cannot run the app, skip this step. Do not invent screenshots.
+That flag matters more than it looks. A `capture` is a record of what the
+product really looks like; an `impression` is a mood reference. Never send a
+generated image as a capture, however convincing it is — the next agent, and
+the person reading the dashboard, both need to know which pictures are evidence
+and which are ideas.
+
+Name each after its route — `dashboard`, `settings-members`, `sign-in` — so
+that re-running this replaces the old picture instead of duplicating it. WebP
+around 1200px wide, under 250 KB each; up to 40 pictures are kept.

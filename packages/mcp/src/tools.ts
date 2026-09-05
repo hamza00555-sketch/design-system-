@@ -14,6 +14,7 @@ import {
   MAX_SCREEN_BYTES,
   MAX_SCREENS,
   type ProjectContext,
+  type ScreenKind,
   type ScreenMeta,
   type Store,
 } from "./store.js";
@@ -100,7 +101,9 @@ export async function getScreen(
 export function describeScreens(screens: ScreenMeta[]): string {
   if (screens.length === 0) return "";
   const lines = screens.map(
-    (screen) => `- ${screen.name}${screen.description ? ` — ${screen.description}` : ""}`,
+    (screen) =>
+      `- ${screen.name}${screen.description ? ` — ${screen.description}` : ""}` +
+      (screen.kind === "impression" ? " [mood reference, not a real screen]" : ""),
   );
   const overflow = screens.length - MAX_INLINE_SCREENS;
   return [
@@ -122,7 +125,13 @@ export function describeScreens(screens: ScreenMeta[]): string {
 export async function addScreen(
   store: Store,
   ctx: ProjectContext,
-  input: { name: string; description?: string; data: string; mimeType: string },
+  input: {
+    name: string;
+    description?: string;
+    data: string;
+    mimeType: string;
+    kind?: ScreenKind;
+  },
 ): Promise<string> {
   const name = input.name?.trim();
   if (!name) return "A screen needs a name — what part of the product is this?";
@@ -152,9 +161,11 @@ export async function addScreen(
     );
   }
 
+  const kind: ScreenKind = input.kind === "impression" ? "impression" : "capture";
   const saved = await store.putScreen(ctx, {
     name,
     description: input.description?.trim() || undefined,
+    kind,
     data,
     mimeType: mimeType!,
     bytes,

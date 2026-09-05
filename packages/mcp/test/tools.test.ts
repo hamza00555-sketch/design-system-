@@ -135,6 +135,48 @@ describe("history and export", () => {
   });
 });
 
+describe("generated pictures are never filed as real ones", () => {
+  beforeEach(async () => {
+    await pushDesignSystem(store, ctx, clearGlass);
+  });
+
+  it("records an impression as an impression", async () => {
+    await addScreen(store, ctx, {
+      name: "dashboard",
+      kind: "impression",
+      data: Buffer.from("mock").toString("base64"),
+      mimeType: "image/webp",
+    });
+    expect((await store.listScreens(ctx))[0]!.kind).toBe("impression");
+  });
+
+  it("defaults to a capture, and treats an unknown kind as one", async () => {
+    await addScreen(store, ctx, {
+      name: "settings",
+      data: Buffer.from("shot").toString("base64"),
+      mimeType: "image/webp",
+    });
+    await addScreen(store, ctx, {
+      name: "sign-in",
+      kind: "nonsense" as never,
+      data: Buffer.from("shot").toString("base64"),
+      mimeType: "image/webp",
+    });
+    const kinds = (await store.listScreens(ctx)).map((s) => s.kind);
+    expect(kinds).toEqual(["capture", "capture"]);
+  });
+
+  it("warns the agent which pictures are not evidence", async () => {
+    await addScreen(store, ctx, {
+      name: "dashboard",
+      kind: "impression",
+      data: Buffer.from("mock").toString("base64"),
+      mimeType: "image/webp",
+    });
+    expect(await getDesignSystem(store, ctx)).toContain("not a real screen");
+  });
+});
+
 describe("get_screen", () => {
   beforeEach(async () => {
     await pushDesignSystem(store, ctx, clearGlass);

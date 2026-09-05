@@ -30,11 +30,22 @@ export interface StoredSystem extends VersionRef {
  * an agent that the app is dense and quiet rather than airy and loud, and MCP
  * can return images — so a screenshot is worth more here than another list.
  */
+/**
+ * Where a picture came from.
+ *
+ * `capture` is the running product. `impression` is an image made to convey
+ * the same mood when the product could not be run — useful as a style
+ * reference, and worthless if it is mistaken for evidence of what the app
+ * actually looks like. Storing which is which is what keeps that honest.
+ */
+export type ScreenKind = "capture" | "impression";
+
 export interface ScreenMeta {
   id: string;
   /** What this screen is: "dashboard", "settings-members". */
   name: string;
   description?: string;
+  kind: ScreenKind;
   mimeType: string;
   bytes: number;
   createdAt: string;

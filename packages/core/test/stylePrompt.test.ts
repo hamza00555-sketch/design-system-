@@ -38,4 +38,19 @@ describe("toStylePrompt", () => {
     expect(out).toContain("Bare");
     expect(out).not.toContain("\n\n\n");
   });
+
+  it("leads with the agent's own words when it wrote any", () => {
+    const withProse = {
+      ...clearGlass,
+      stylePrompt: "Dense and quiet. Colour is withheld until something is wrong.",
+    };
+    const out = toStylePrompt(withProse);
+    expect(out.indexOf("Dense and quiet")).toBeLessThan(out.indexOf("## The tokens"));
+    // The exact values still follow: prose does not replace the scale.
+    expect(out).toContain("#2f6bff");
+  });
+
+  it("reads the same as before when the agent wrote none", () => {
+    expect(toStylePrompt({ ...clearGlass, stylePrompt: undefined })).toBe(prompt);
+  });
 });

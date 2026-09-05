@@ -173,7 +173,8 @@
     "must": "Must",
     "should": "Should",
     "screens": "Screens",
-    "noScreens": "No screenshots yet. The extraction prompt asks your agent for one of every page."
+    "noScreens": "No screenshots yet. The extraction prompt asks your agent for one of every page.",
+    "impression": "mood reference"
   },
   "common": {
     "loading": "Loading…",

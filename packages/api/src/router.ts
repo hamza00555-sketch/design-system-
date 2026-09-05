@@ -317,6 +317,7 @@ export async function handleApiRequest(
             description: body.description ? String(body.description) : undefined,
             data: String(body.data ?? ""),
             mimeType: String(body.mimeType ?? ""),
+            kind: body.kind === "impression" ? "impression" : "capture",
           }),
         });
         return;

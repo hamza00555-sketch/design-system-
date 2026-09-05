@@ -104,6 +104,16 @@ export const DesignSystemSchema = z.object({
   tokens: TokensSchema,
   components: z.array(ComponentSpecSchema).default([]),
   rules: z.array(RuleSchema).default([]),
+  /**
+   * The style, in the extracting agent's own words.
+   *
+   * A style prompt can be derived from tokens, and `toStylePrompt` does derive
+   * one — but the agent that read the code saw things the tokens cannot hold:
+   * that the product is dense and quiet, that motion is used sparingly, that
+   * cards never nest. It writes that down here, and the derived appendix
+   * carries the exact values underneath it.
+   */
+  stylePrompt: z.string().optional(),
 });
 
 export type ColorToken = z.infer<typeof ColorTokenSchema>;

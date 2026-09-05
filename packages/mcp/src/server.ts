@@ -104,10 +104,19 @@ export function createMcpServer(store: Store, ctx: ProjectContext): McpServer {
         description: z.string().optional().describe("One line on what it shows."),
         data: z.string().describe("The image, base64 encoded."),
         mimeType: z.enum(["image/png", "image/jpeg", "image/webp"]),
+        kind: z
+          .enum(["capture", "impression"])
+          .default("capture")
+          .describe(
+            'Use "capture" for a screenshot of the running product. Use ' +
+              '"impression" for an image you generated to convey its mood ' +
+              "because you could not run it. Never label a generated image a " +
+              "capture: it is stored as a record of what the product looks like.",
+          ),
       },
     },
-    async ({ name, description, data, mimeType }) =>
-      text(await addScreen(store, ctx, { name, description, data, mimeType })),
+    async ({ name, description, data, mimeType, kind }) =>
+      text(await addScreen(store, ctx, { name, description, data, mimeType, kind })),
   );
 
   server.registerTool(

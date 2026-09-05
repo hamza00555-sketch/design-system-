@@ -103,6 +103,15 @@ Rules for the extraction:
 - For every component, give each state its real CSS in "preview" so it can be
   drawn: what a default button looks like, and a hover, and a disabled one.
 
+Also write a "stylePrompt": a paragraph or two describing how THIS product
+looks and feels, in your own words, addressed to an agent that has never seen
+it. The token values are captured separately and exactly — do not repeat them
+here. Write down what the numbers cannot hold: is it dense or airy, quiet or
+loud, sharp or soft? Where does colour get used and where is it withheld? How
+much motion is there? What would look wrong here even if every value was
+technically on the scale? Be specific to this product; a paragraph that could
+describe any app is worth nothing.
+
 Then send it with a single request:
 
 POST ${base}/api/systems/push
@@ -114,6 +123,7 @@ Body: {"system": <the design system>}
 Shape:
 {"schemaVersion":1,
  "meta":{"name":"<product>","source":"code"},
+ "stylePrompt":"<how this product looks and feels, in prose>",
  "tokens":{
    "color":{"primary":{"value":"#2f6bff","usage":"..."}},
    "typography":{"families":{},"sizes":{},"weights":{},"lineHeights":{},"letterSpacing":{}},
@@ -132,24 +142,34 @@ text, surface, and each state's "styles" is the plain CSS that state actually
 ships, resolved to real values rather than variable names. Report the version
 number and token count that come back.
 
-Then attach screenshots. The tokens carry the values; the screenshots carry the
-look, and a later agent can see them. Run the app and take **one screenshot of
-every page it has** — walk the router, list every route, and capture each one.
-Do not stop at the two or three prettiest screens; the empty states, the
-settings page, and the error page are part of the style too. Where a page
-changes shape in a meaningful way (a filled list vs. its empty state, a modal
-open) capture both and name them apart.
+Then attach pictures. The tokens carry the values; the pictures carry the look,
+and a later agent can see them.
+
+First choice — run the app and take one screenshot of every page it has. Walk
+the router, list every route, and capture each one. Do not stop at the two or
+three prettiest screens; the empty states, the settings page and the error page
+are part of the style too, and they are the ones a later agent gets wrong.
 
 Send each with:
 
 POST ${base}/api/systems/screens
 Authorization: Bearer ${apiKey}
-Body: {"name":"dashboard","description":"the main view","data":"<base64>","mimeType":"image/webp"}
+Body: {"name":"dashboard","description":"the main view","kind":"capture","data":"<base64>","mimeType":"image/webp"}
+
+If you cannot run the app — no build, no browser, no way to reach it — then
+generate images instead: mockups that carry this product's mood, built from the
+tokens and components you just extracted, one per major screen you can infer
+from the code. Send those exactly the same way but with "kind":"impression",
+and say in the description what it is a mock of.
+
+That flag matters. "capture" is a record of what the product really looks like;
+"impression" is a mood reference. Never send a generated image as a capture,
+even a convincing one — a later agent, and the person reading the dashboard,
+both need to know which pictures are evidence and which are ideas.
 
 Name each after its route — "dashboard", "settings-members", "sign-in" — so
-re-running this replaces the shot rather than duplicating it. WebP around
-1200px wide, under 250 KB each, no data: prefix needed, up to 40 screens.
-If you cannot run the app, skip this — do not invent screenshots.
+re-running this replaces the picture rather than duplicating it. WebP around
+1200px wide, under 250 KB each, no data: prefix needed, up to 40 pictures.
 
 To check a file against the system afterwards:
 POST ${base}/api/systems/verify with {"files":[{"path":"...","content":"..."}]}`;

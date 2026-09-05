@@ -38,6 +38,7 @@ export function ScreenGallery({ systemId }: { systemId: string | null }) {
 }
 
 function ScreenTile({ systemId, screen }: { systemId: string | null; screen: ScreenDoc }) {
+  const t = useTranslations("tokens");
   const ref = useRef<HTMLElement | null>(null);
   const [near, setNear] = useState(false);
   const src = useScreenImage(systemId, screen, near);
@@ -70,7 +71,16 @@ function ScreenTile({ systemId, screen }: { systemId: string | null; screen: Scr
         <div className="aspect-[16/10] w-full animate-pulse bg-raised" />
       )}
       <figcaption className="border-t border-line px-3 py-2">
-        <span className="text-sm">{screen.name}</span>
+        <span className="flex flex-wrap items-baseline gap-x-2">
+          <span className="text-sm">{screen.name}</span>
+          {/* An impression is a mood reference, not a record of the product.
+              Saying so on the card is the whole point of storing the kind. */}
+          {screen.kind === "impression" ? (
+            <span className="rounded border border-line px-1 py-0.5 text-[11px] text-faint">
+              {t("impression")}
+            </span>
+          ) : null}
+        </span>
         {screen.description ? (
           <span className="block text-xs text-muted">{screen.description}</span>
         ) : null}

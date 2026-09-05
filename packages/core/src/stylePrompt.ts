@@ -31,16 +31,23 @@ function scaleSentence(record: Record<string, DimensionToken>): string {
 export function toStylePrompt(system: DesignSystem): string {
   const t = system.tokens;
   const name = system.meta.name;
-  const out: string[] = [
-    `Design everything you build in the style of ${name}.`,
-    "",
+  const out: string[] = [`Design everything you build in the style of ${name}.`, ""];
+
+  // The extracting agent's own description leads, because it saw the product
+  // and this file only ever saw its numbers. The values then follow as the
+  // part that has to be obeyed exactly.
+  if (system.stylePrompt?.trim()) {
+    out.push(system.stylePrompt.trim(), "");
+  }
+
+  out.push(
     "This is the complete style. It is closed: every colour, size, space, and",
     "radius you use must be one of the values below, verbatim. When nothing",
     "here fits, take the nearest value and say what you would have wanted —",
     "never invent a new one, never nudge a value by a pixel or a shade.",
     "",
     `## The tokens (${countTokens(system)})`,
-  ];
+  );
 
   const colors = Object.entries(t.color);
   if (colors.length > 0) {

@@ -45,6 +45,8 @@ export interface ScreenDoc {
   id: string;
   name: string;
   description: string | null;
+  /** A real screenshot, or an image made to convey the mood. */
+  kind: "capture" | "impression";
   mimeType: string;
 }
 
@@ -262,6 +264,7 @@ export function useScreens(systemId: string | null) {
                   id: d.id,
                   name: (d.get("name") as string) ?? d.id,
                   description: (d.get("description") as string) ?? null,
+                  kind: d.get("kind") === "impression" ? "impression" : "capture",
                   mimeType: (d.get("mimeType") as string) ?? "image/png",
                 })),
               ),
