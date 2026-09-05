@@ -9,6 +9,6 @@ export { mintConnectCode } from "./connectCodes.js";
 export { FirestoreStore } from "./firestoreStore.js";
 export { generateConnectCode, generateProjectKey, hashKey, normalizeConnectCode } from "./keys.js";
 export { billingEnabled, PLANS, planOf, countSeats, countProjects } from "./plans.js";
-export { bootstrapWorkspace, createSystem, removeMember } from "./teams.js";
+export { bootstrapWorkspace, createSystem, removeMember, systemBelongsTo } from "./teams.js";
 export type { Workspace } from "./teams.js";
 export { restoreVersionForTeam } from "./versions.js";

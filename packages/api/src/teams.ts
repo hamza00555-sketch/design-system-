@@ -139,3 +139,23 @@ export async function removeMember(
   await memberRef.delete();
   return { ok: true };
 }
+
+/**
+ * Does this system belong to this team?
+ *
+ * Membership in the team named by the request is checked before any
+ * team-scoped handler runs — but several of them also take a systemId straight
+ * from the browser, and belonging to *a* team says nothing about owning *that*
+ * system. Pairing your own teamId with someone else's systemId passed every
+ * check there was, which mattered the moment sign-up opened: the read-key route
+ * would hand over their tokens and every screenshot, and the project routes
+ * would hand over a key that can overwrite their design system.
+ */
+export async function systemBelongsTo(
+  db: Firestore,
+  teamId: string,
+  systemId: string,
+): Promise<boolean> {
+  const system = await db.collection("systems").doc(systemId).get();
+  return system.exists && system.get("teamId") === teamId;
+}

@@ -17,7 +17,7 @@ import { billingEnabled, checkProjectLimit, planForTeam } from "./plans.js";
 import { createProject, redeemConnectCode } from "./connect.js";
 import { mintConnectCode } from "./connectCodes.js";
 import { FirestoreStore } from "./firestoreStore.js";
-import { bootstrapWorkspace, createSystem, removeMember } from "./teams.js";
+import { bootstrapWorkspace, createSystem, removeMember, systemBelongsTo } from "./teams.js";
 import { restoreVersionForTeam } from "./versions.js";
 
 /**
@@ -115,6 +115,9 @@ const TEAM_SCOPED: Record<string, (ctx: TeamCtx) => Promise<void>> = {
   "/api/systems/read-key": async ({ db, res, caller, teamId, body }) => {
     const systemId = String(body.systemId ?? "");
     if (!systemId) return fail(res, 400, "systemId is required.", "bad_request");
+    if (!(await systemBelongsTo(db, teamId, systemId))) {
+      return fail(res, 404, "No such system on this team.", "not_found");
+    }
     const result = await createProject(db, {
       teamId,
       systemId,
@@ -128,6 +131,9 @@ const TEAM_SCOPED: Record<string, (ctx: TeamCtx) => Promise<void>> = {
   "/api/projects/create": async ({ db, res, caller, teamId, body }) => {
     const systemId = String(body.systemId ?? "");
     if (!systemId) return fail(res, 400, "systemId is required.", "bad_request");
+    if (!(await systemBelongsTo(db, teamId, systemId))) {
+      return fail(res, 404, "No such system on this team.", "not_found");
+    }
 
     const plan = await planForTeam(db, teamId);
     const limit = await checkProjectLimit(db, teamId, plan);
@@ -153,6 +159,9 @@ const TEAM_SCOPED: Record<string, (ctx: TeamCtx) => Promise<void>> = {
   "/api/connect-codes": async ({ db, res, caller, teamId, body }) => {
     const systemId = String(body.systemId ?? "");
     if (!systemId) return fail(res, 400, "systemId is required.", "bad_request");
+    if (!(await systemBelongsTo(db, teamId, systemId))) {
+      return fail(res, 404, "No such system on this team.", "not_found");
+    }
     res.status(201).json(await mintConnectCode(db, teamId, systemId, caller.uid));
   },
 
