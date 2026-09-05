@@ -8,7 +8,7 @@ import { SettingsShell } from "@/components/SettingsShell";
 import { ApiError, callApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { BILLING_ENABLED } from "@/lib/billing";
-import { useMembers, usePendingInvites, useProjects } from "@/lib/data";
+import { useMembers, useProjects } from "@/lib/data";
 import { db } from "@/lib/firebase";
 
 /** Kept in step with functions/src/plans.ts. */
@@ -22,7 +22,6 @@ export default function BillingPage() {
 
   const projects = useProjects(workspace?.teamId ?? null);
   const members = useMembers(workspace?.teamId ?? null);
-  const invites = usePendingInvites(workspace?.teamId ?? null);
 
   const [pending, setPending] = useState<"checkout" | "portal" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +72,9 @@ export default function BillingPage() {
     }
   };
 
-  const seatsUsed = members.data.length + invites.data.length;
+  // Seats are just the people on the team now: an invitation used to
+  // hold one, and there are no invitations.
+  const seatsUsed = members.data.length;
   const limit = (value: number) => (isPro ? t("seatsUnlimited") : String(value));
   const planLine = !BILLING_ENABLED ? t("planOpen") : isPro ? t("planPro") : t("planFree");
   const planTag = !BILLING_ENABLED

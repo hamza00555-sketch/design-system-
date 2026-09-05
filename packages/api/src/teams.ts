@@ -2,6 +2,14 @@ import type { Firestore } from "firebase-admin/firestore";
 import { FieldValue } from "firebase-admin/firestore";
 import type { Caller } from "./auth.js";
 
+export type Failure = { ok: false; status: number; error: string; code: string };
+export type Success<T> = { ok: true } & T;
+export type Outcome<T = Record<string, unknown>> = Success<T> | Failure;
+
+function fail(status: number, error: string, code: string): Failure {
+  return { ok: false, status, error, code };
+}
+
 export interface Workspace {
   teamId: string;
   systemId: string;
@@ -106,4 +114,28 @@ export async function createSystem(
     createdAt: FieldValue.serverTimestamp(),
   });
   return { systemId: ref.id, name };
+}
+
+/**
+ * Take somebody off a team.
+ *
+ * Invitations are gone, so no new member can be added this way — but teams
+ * that gained members while invitations existed still need a way to shed one.
+ */
+export async function removeMember(
+  db: Firestore,
+  teamId: string,
+  uid: string,
+): Promise<Outcome> {
+  const teamRef = db.collection("teams").doc(teamId);
+  const team = await teamRef.get();
+  if (team.get("ownerUid") === uid) {
+    return fail(403, "The team owner cannot be removed.", "forbidden");
+  }
+  const memberRef = teamRef.collection("members").doc(uid);
+  if (!(await memberRef.get()).exists) {
+    return fail(404, "They are not on this team.", "not_found");
+  }
+  await memberRef.delete();
+  return { ok: true };
 }

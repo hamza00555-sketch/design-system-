@@ -54,13 +54,6 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // A team can see its own outstanding invitations. The invitee does not read
-    // this collection at all — they hand their token to the accept endpoint,
-    // which is also why the token is never exposed to a client.
-    match /invites/{inviteId} {
-      allow read: if isMember(resource.data.teamId);
-      allow write: if false;
-    }
 
     match /verifications/{verificationId} {
       allow read: if isMember(resource.data.teamId);

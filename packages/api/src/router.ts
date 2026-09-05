@@ -17,8 +17,7 @@ import { billingEnabled, checkProjectLimit, planForTeam } from "./plans.js";
 import { createProject, redeemConnectCode } from "./connect.js";
 import { mintConnectCode } from "./connectCodes.js";
 import { FirestoreStore } from "./firestoreStore.js";
-import { acceptInvite, inviteMember, removeMember, revokeInvite } from "./invites.js";
-import { bootstrapWorkspace, createSystem } from "./teams.js";
+import { bootstrapWorkspace, createSystem, removeMember } from "./teams.js";
 import { restoreVersionForTeam } from "./versions.js";
 
 /**
@@ -81,10 +80,6 @@ const AUTHED: Record<string, (ctx: AuthedCtx) => Promise<void>> = {
     res.status(200).json(await bootstrapWorkspace(db, caller));
   },
 
-  "/api/invites/accept": async ({ db, res, caller, body }) => {
-    const result = await acceptInvite(db, caller, String(body.token ?? ""));
-    respond(res, result, 200);
-  },
 };
 
 /**
@@ -174,23 +169,7 @@ const TEAM_SCOPED: Record<string, (ctx: TeamCtx) => Promise<void>> = {
     }
   },
 
-  "/api/members/invite": async ({ db, res, caller, teamId, role, body }) => {
-    if (!canManageTeam(role)) {
-      return fail(res, 403, "Only owners and admins can invite people.", "forbidden");
-    }
-    const result = await inviteMember(db, teamId, caller, {
-      email: String(body.email ?? ""),
-      role: body.role === "admin" ? "admin" : "member",
-    });
-    respond(res, result, 201);
-  },
 
-  "/api/members/revoke": async ({ db, res, teamId, role, body }) => {
-    if (!canManageTeam(role)) {
-      return fail(res, 403, "Only owners and admins can manage invitations.", "forbidden");
-    }
-    respond(res, await revokeInvite(db, teamId, String(body.inviteId ?? "")), 200);
-  },
 
   "/api/members/remove": async ({ db, res, teamId, role, body }) => {
     if (!canManageTeam(role)) {

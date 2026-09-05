@@ -139,25 +139,16 @@
     "checkoutDone": "Payment received. Your plan updates the moment Stripe confirms it.",
     "checkoutCancelled": "Checkout cancelled — nothing was charged.",
     "billingUnconfigured": "Billing is not set up on this deployment.",
-    "invite": "Invite",
-    "inviting": "Inviting…",
-    "invitePlaceholder": "teammate@company.com",
     "roleMember": "Member",
     "roleAdmin": "Admin",
     "roleOwner": "Owner",
-    "pending": "Pending",
     "remove": "Remove",
-    "revoke": "Revoke",
-    "inviteSent": "Invitation ready — send them this link.",
-    "inviteLink": "Invitation link",
     "membersTitle": "People on this team",
-    "invitesTitle": "Pending invitations",
-    "noInvites": "No pending invitations.",
-    "seatLimitReached": "The free plan covers one person. Upgrade to invite teammates.",
     "onlyManagers": "Only owners and admins can do that.",
     "planOpen": "Open — everything on, nothing to pay",
     "planLabelOpen": "Open",
-    "openBody": "Unlimited projects, unlimited teammates, unlimited generations. Billing is switched off on this deployment."
+    "openBody": "Unlimited projects, unlimited teammates, unlimited generations. Billing is switched off on this deployment.",
+    "membersBody": "Everyone who signs in gets their own workspace, so nobody is added here."
   },
   "tokens": {
     "color": "Color",
@@ -193,17 +184,6 @@
     "retry": "Try again",
     "close": "Close",
     "download": "Download"
-  },
-  "invite": {
-    "title": "Join {team}",
-    "body": "You have been invited to a design system on Miswadah.",
-    "accept": "Accept invitation",
-    "accepting": "Joining…",
-    "signInFirst": "Sign in first, then this link will add you to the team.",
-    "accepted": "You are on the team. Taking you to the dashboard…",
-    "invalid": "That invitation is not valid.",
-    "expired": "That invitation has expired. Ask for a fresh one.",
-    "used": "That invitation has already been used."
   },
   "site": {
     "nav": {

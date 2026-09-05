@@ -48,17 +48,10 @@ export async function countProjects(db: Firestore, teamId: string): Promise<numb
   return snap.size;
 }
 
-/** Members plus outstanding invitations — an invite holds a seat. */
+/** How many people are on the team. */
 export async function countSeats(db: Firestore, teamId: string): Promise<number> {
-  const [members, invites] = await Promise.all([
-    db.collection("teams").doc(teamId).collection("members").get(),
-    db
-      .collection("invites")
-      .where("teamId", "==", teamId)
-      .where("status", "==", "pending")
-      .get(),
-  ]);
-  return members.size + invites.size;
+  const members = await db.collection("teams").doc(teamId).collection("members").get();
+  return members.size;
 }
 
 export interface LimitCheck {

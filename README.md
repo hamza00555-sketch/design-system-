@@ -76,13 +76,14 @@ functions/      the same API on Firebase, for anyone on the Blaze plan
 scripts/        local dev server — no emulator, no Java
 ```
 
-### Private by default
+### Open by default
 
-The first person to sign in claims the instance; after that, sign-up is refused
-and the only way in is an invitation. No configuration, and it fails closed.
-`ALLOWED_EMAILS` admits more addresses, `OPEN_SIGNUPS=1` runs it as a public
-product, and `NEXT_PUBLIC_PUBLIC_SITE=1` puts the landing page back in front of
-the dashboard.
+Anyone who reaches the URL and signs in gets a workspace — their own team,
+their own design systems. The team is derived from the account signing in, so
+an open door never puts a stranger inside somebody else's data.
+`ALLOWED_EMAILS` closes it to a list of addresses, and
+`NEXT_PUBLIC_PUBLIC_SITE=1` puts the landing page back in front of the
+dashboard.
 
 ### Teams and billing
 
@@ -95,9 +96,7 @@ that reverses, and rebuilding seat counting the second time is the same work as
 the first.
 
 With billing on: one design system, one project, one person on free; paying
-starts at the second project or the second teammate. A pending invitation holds
-a seat, so the refusal lands on the person doing the inviting rather than on
-whoever arrives last. Stripe drives the plan through signed webhooks —
+starts at the second project or the second teammate. Stripe drives the plan through signed webhooks —
 checkout succeeding is not the event that matters — and `past_due` keeps the
 paid features on, because a failed card is a card problem, not a downgrade.
 

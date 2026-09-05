@@ -57,7 +57,7 @@ export async function memberRole(
   return role === "owner" || role === "admin" ? role : "member";
 }
 
-/** Who may invite, remove, and pay: not every member. */
+/** Who may remove members and pay: not every member. */
 export function canManageTeam(role: Role | null): boolean {
   return role === "owner" || role === "admin";
 }

@@ -1,15 +1,14 @@
 export { handleApiRequest } from "./router.js";
 export type { ApiRequest, ApiResponse } from "./router.js";
-export { canBootstrap, openSignups } from "./access.js";
+export { canBootstrap } from "./access.js";
 export { verifyCaller, memberRole, canManageTeam, isMember } from "./auth.js";
 export type { Caller, Role } from "./auth.js";
 export { applyStripeEvent, planForStatus, stripeGateway } from "./billing.js";
 export { createProject, redeemConnectCode, CONNECT_CODE_TTL_MS, FREE_PROJECT_LIMIT } from "./connect.js";
 export { mintConnectCode } from "./connectCodes.js";
 export { FirestoreStore } from "./firestoreStore.js";
-export { acceptInvite, inviteMember, removeMember, revokeInvite, INVITE_TTL_MS } from "./invites.js";
 export { generateConnectCode, generateProjectKey, hashKey, normalizeConnectCode } from "./keys.js";
 export { billingEnabled, PLANS, planOf, countSeats, countProjects } from "./plans.js";
-export { bootstrapWorkspace } from "./teams.js";
+export { bootstrapWorkspace, createSystem, removeMember } from "./teams.js";
 export type { Workspace } from "./teams.js";
 export { restoreVersionForTeam } from "./versions.js";

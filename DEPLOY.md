@@ -17,29 +17,27 @@ to Blaze — nothing here needs it.
 
 That means Firebase is used only for what is free: sign-in and the database.
 
-## 0. This is a private deployment
+## 0. Sign-up is open
 
-By default it is yours alone. The first person to sign in claims the instance;
-after that, sign-up is refused and the only way in is an invitation you send.
-That needs no configuration and fails closed — the safe direction if anyone
-forgets to set anything.
+Anyone who reaches the URL and signs in gets a workspace.
 
-Firebase Auth will happily create an account for anyone with a Google account
-who finds the URL, so this check lives in the API, not in the sign-in button.
+What they get is their *own*: their own team, their own design systems, their
+own screenshots. The team is derived from the account that signs in, so an open
+door never puts a stranger inside your data — it gives them an empty desk next
+to it.
 
-Two optional environment variables on the functions:
+One optional environment variable closes it again:
 
 ```
-ALLOWED_EMAILS=you@example.com,you@work.com   # admit these addresses too
-OPEN_SIGNUPS=1                                # run it as a public product
+ALLOWED_EMAILS=you@example.com,you@work.com   # only these addresses may join
 ```
 
-Use `ALLOWED_EMAILS` if you sign in with more than one account — otherwise the
-second one is a stranger to it.
+Leave it unset and anyone may join. Set it and only those addresses may — but
+anyone already on a team keeps their access, because locking a door should not
+throw out the people already inside.
 
-The web app defaults to private as well: the root goes straight to the
-dashboard, and the marketing pages stay reachable by URL but stop being the
-front door. `NEXT_PUBLIC_PUBLIC_SITE=1` puts the landing page back in front.
+The web app still defaults to opening at the dashboard rather than a landing
+page; `NEXT_PUBLIC_PUBLIC_SITE=1` puts the marketing pages back in front.
 
 ## 1. Billing is off by default
 
@@ -178,9 +176,9 @@ firebase deploy --only firestore:rules,firestore:indexes
 firebase deploy --only functions
 ```
 
-`firestore.indexes.json` carries three indexes the app needs (recent
-verifications, pending invitations, and the collection-group lookup that finds
-which team you belong to). Firestore builds them in the background; queries
+`firestore.indexes.json` carries the one index the app needs: the
+collection-group lookup that finds which team you belong to. Everything else
+queries a single field, which Firestore indexes automatically. Firestore builds them in the background; queries
 that need them fail until the build finishes, which takes a minute or two on an
 empty database.
 
@@ -363,13 +361,13 @@ calls `get_design_system` first and `verify` after. Write a deliberate
 
 - [ ] `firestore.rules` deployed — the Rules Playground denies a client read of
       `projectKeys`.
-- [ ] You signed in first, so the instance is claimed. Check that a second
-      account is refused with "This deployment is private".
+- [ ] A second account can sign in and lands in its own empty workspace — not
+      in yours. If you set `ALLOWED_EMAILS`, check instead that it is refused.
 - [ ] Authorised domains include the production domain, or nobody can sign in.
 - [ ] `/api/health` answers on the deployed function URL.
 - [ ] A repo connected, a system pushed, and one deliberate off-brand value
       caught by verify.
 
-The legal pages ship with a visible draft banner. That is the right state for a
-private instance — ignore it. If you ever open this up, they need a real
-operating entity, a real governing law, and a lawyer's read first.
+The legal pages ship with a visible draft banner. Sign-up is open now, so
+anyone can reach them: before this is used by people who are not you, they need
+a real operating entity, a real governing law, and a lawyer's read.
