@@ -2,6 +2,8 @@ import { BRAND } from "@miswadah/core";
 import {
   addScreen,
   getDesignSystem,
+  listScreensFor,
+  removeScreen,
   handleMcpHttp,
   pushDesignSystem,
   verifyFiles,
@@ -310,8 +312,28 @@ export async function handleApiRequest(
         return;
       }
       if (path === "/api/systems/screens") {
+        // GET answers the question that matters when pictures go missing:
+        // which system did this key actually write to, and what is in it? It
+        // reads as the server, so it is also the one view that is unaffected
+        // by Firestore's security rules.
+        if (req.method === "GET") {
+          res.status(200).json(await listScreensFor(store, ctx));
+          return;
+        }
+
+        if (req.method === "DELETE") {
+          const body = (req.body ?? {}) as Json;
+          const result = await removeScreen(store, ctx, String(body.name ?? ""));
+          if (result.error) {
+            return fail(res, result.deleted === null ? 404 : 400, result.error, "not_found");
+          }
+          res.status(200).json({ systemId: ctx.systemId, ...result });
+          return;
+        }
+
         const body = (req.body ?? {}) as Json;
         res.status(200).json({
+          systemId: ctx.systemId,
           result: await addScreen(store, ctx, {
             name: String(body.name ?? ""),
             description: body.description ? String(body.description) : undefined,

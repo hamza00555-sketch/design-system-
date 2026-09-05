@@ -174,6 +174,61 @@ export async function addScreen(
   return `Saved "${saved.name}" (${Math.round(bytes / 1000)} KB). ${held} of ${MAX_SCREENS} screens.`;
 }
 
+/**
+ * What this key can see, without any image bytes.
+ *
+ * Deliberately reports the systemId back. When screens are "missing", the
+ * first question is always whether they were written where they are being
+ * looked for, and this is the only view that answers it without going through
+ * Firestore's security rules — the server reads as itself.
+ */
+export async function listScreensFor(
+  store: Store,
+  ctx: ProjectContext,
+): Promise<{
+  systemId: string;
+  systemName: string | null;
+  projectId: string;
+  total: number;
+  limit: number;
+  screens: ScreenMeta[];
+}> {
+  const [screens, current] = await Promise.all([store.listScreens(ctx), store.getCurrent(ctx)]);
+  return {
+    systemId: ctx.systemId,
+    systemName: current?.system.meta.name ?? null,
+    projectId: ctx.projectId,
+    total: screens.length,
+    limit: MAX_SCREENS,
+    screens,
+  };
+}
+
+/** Remove one screen by name or id, image bytes included. */
+export async function removeScreen(
+  store: Store,
+  ctx: ProjectContext,
+  nameOrId: string,
+): Promise<{ deleted: string | null; total: number; error?: string }> {
+  const wanted = nameOrId.trim().toLowerCase();
+  const screens = await store.listScreens(ctx);
+  if (!wanted) {
+    return { deleted: null, total: screens.length, error: "Which screen? Send its name." };
+  }
+  const match =
+    screens.find((screen) => screen.id.toLowerCase() === wanted) ??
+    screens.find((screen) => screen.name.toLowerCase() === wanted);
+  if (!match) {
+    return {
+      deleted: null,
+      total: screens.length,
+      error: `No screen called "${nameOrId}".`,
+    };
+  }
+  await store.deleteScreen(ctx, match.id);
+  return { deleted: match.name, total: (await store.listScreens(ctx)).length };
+}
+
 export async function verifyFiles(
   store: Store,
   ctx: ProjectContext,

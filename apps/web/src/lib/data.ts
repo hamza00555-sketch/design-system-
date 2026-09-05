@@ -12,7 +12,7 @@ import {
   where,
   type DocumentData,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { db } from "./firebase";
 
 export interface VersionDoc {
@@ -276,32 +276,63 @@ export function useScreens(systemId: string | null) {
   );
 }
 
-/** One screenshot as a data: URL, or null until it has been asked for. */
+export interface ScreenImage {
+  src: string | null;
+  state: "idle" | "loading" | "loaded" | "missing" | "error";
+  error: string | null;
+  retry: () => void;
+}
+
+/**
+ * One screenshot's bytes, fetched when something is about to show it.
+ *
+ * The outcome is reported rather than swallowed. Silently catching here is
+ * what turned a refused read into a placeholder that animated forever, which
+ * is worse than an error: it looks like progress.
+ */
 export function useScreenImage(
   systemId: string | null,
   screen: ScreenDoc | null,
   wanted: boolean,
-): string | null {
+): ScreenImage {
   const [src, setSrc] = useState<string | null>(null);
+  const [state, setState] = useState<ScreenImage["state"]>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+
+  const retry = useCallback(() => {
+    setState("idle");
+    setError(null);
+    setAttempt((n) => n + 1);
+  }, []);
 
   useEffect(() => {
     if (!wanted || !systemId || !screen || src) return;
     let live = true;
+    setState("loading");
+    setError(null);
     getDoc(doc(db(), "systems", systemId, "screens", screen.id, "payload", "image"))
       .then((snap) => {
-        const data = snap.get("data") as string | undefined;
-        if (live && data) setSrc(`data:${screen.mimeType};base64,${data}`);
+        if (!live) return;
+        const data = snap.exists() ? (snap.get("data") as string | undefined) : undefined;
+        if (!data) {
+          setState("missing");
+          return;
+        }
+        setSrc(`data:${screen.mimeType};base64,${data}`);
+        setState("loaded");
       })
-      .catch(() => {
-        // A missing picture is not worth an error state: the caption still
-        // tells the reader which screen this is.
+      .catch((err: unknown) => {
+        if (!live) return;
+        setError(err instanceof Error ? err.message : String(err));
+        setState("error");
       });
     return () => {
       live = false;
     };
-  }, [wanted, systemId, screen, src]);
+  }, [wanted, systemId, screen, src, attempt]);
 
-  return src;
+  return { src, state, error, retry };
 }
 
 export function useMembers(teamId: string | null) {

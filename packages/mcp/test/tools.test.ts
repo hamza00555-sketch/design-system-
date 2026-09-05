@@ -6,7 +6,9 @@ import {
   exportSystem,
   getDesignSystem,
   getScreen,
+  listScreensFor,
   listVersions,
+  removeScreen,
   pushDesignSystem,
   restoreVersion,
   verifyFiles,
@@ -174,6 +176,49 @@ describe("generated pictures are never filed as real ones", () => {
       mimeType: "image/webp",
     });
     expect(await getDesignSystem(store, ctx)).toContain("not a real screen");
+  });
+});
+
+describe("listing and deleting screens", () => {
+  beforeEach(async () => {
+    await pushDesignSystem(store, ctx, clearGlass);
+    for (const name of ["Dashboard", "Settings"]) {
+      await addScreen(store, ctx, {
+        name,
+        data: Buffer.from(name).toString("base64"),
+        mimeType: "image/webp",
+      });
+    }
+  });
+
+  it("names the system the key wrote to, and carries no image bytes", async () => {
+    const listing = await listScreensFor(store, ctx);
+    expect(listing.systemId).toBe(ctx.systemId);
+    expect(listing.total).toBe(2);
+    expect(listing.limit).toBe(MAX_SCREENS);
+    // The whole point of the listing is that it is cheap.
+    for (const screen of listing.screens) {
+      expect(screen).not.toHaveProperty("data");
+    }
+  });
+
+  it("deletes by name and reports the new total", async () => {
+    const result = await removeScreen(store, ctx, "Dashboard");
+    expect(result.deleted).toBe("Dashboard");
+    expect(result.total).toBe(1);
+    expect(await store.getScreen(ctx, "dashboard")).toBeNull();
+  });
+
+  it("refuses a name it does not hold rather than deleting something else", async () => {
+    const result = await removeScreen(store, ctx, "checkout");
+    expect(result.deleted).toBeNull();
+    expect(result.error).toContain("checkout");
+    expect((await store.listScreens(ctx)).length).toBe(2);
+  });
+
+  it("refuses an empty name", async () => {
+    expect((await removeScreen(store, ctx, "   ")).error).toBeTruthy();
+    expect((await store.listScreens(ctx)).length).toBe(2);
   });
 });
 
