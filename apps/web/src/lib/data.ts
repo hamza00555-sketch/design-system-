@@ -35,6 +35,7 @@ export interface SystemDoc {
 
 export interface VerificationDoc {
   id: string;
+  systemId: string;
   projectId: string;
   passed: boolean;
   violationCount: number;
@@ -216,32 +217,43 @@ export function useVersion(systemId: string | null, versionId: string | null) {
   );
 }
 
-export function useVerifications(systemId: string | null, max = 12) {
+/**
+ * Recent verifications for one system.
+ *
+ * Queried by teamId rather than systemId, because Firestore proves a query
+ * against its constraints and not its results: the rule asks whether the
+ * caller is a member of `resource.data.teamId`, and a query that never
+ * mentions teamId cannot be shown to satisfy it, so it is refused outright.
+ * Narrowing to the system, ordering and limiting all happen here instead —
+ * which also keeps this on the automatic single-field index, with no
+ * composite index to deploy.
+ */
+export function useVerifications(teamId: string | null, systemId: string | null, max = 12) {
   return useLive<VerificationDoc[]>(
-    systemId
+    teamId
       ? (onData, onError) =>
           onSnapshot(
-            query(
-              collection(db(), "verifications"),
-              where("systemId", "==", systemId),
-              orderBy("createdAt", "desc"),
-              fsLimit(max),
-            ),
+            query(collection(db(), "verifications"), where("teamId", "==", teamId)),
             (snap) =>
               onData(
-                snap.docs.map((d) => ({
-                  id: d.id,
-                  projectId: d.get("projectId") as string,
-                  passed: Boolean(d.get("passed")),
-                  violationCount: (d.get("violationCount") as number) ?? 0,
-                  createdAt: toDate(d.get("createdAt")),
-                })),
+                snap.docs
+                  .map((d) => ({
+                    id: d.id,
+                    systemId: (d.get("systemId") as string) ?? "",
+                    projectId: d.get("projectId") as string,
+                    passed: Boolean(d.get("passed")),
+                    violationCount: (d.get("violationCount") as number) ?? 0,
+                    createdAt: toDate(d.get("createdAt")),
+                  }))
+                  .filter((check) => !systemId || check.systemId === systemId)
+                  .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0))
+                  .slice(0, max),
               ),
             (err) => onError(err.message),
           )
       : null,
     [],
-    [systemId, max],
+    [teamId, systemId, max],
   );
 }
 

@@ -27,7 +27,7 @@ function Dashboard() {
 
   const system = useSystem(systemId);
   const current = useVersion(systemId, system.data?.currentVersionId ?? null);
-  const checks = useVerifications(systemId);
+  const checks = useVerifications(workspace?.teamId ?? null, systemId);
 
   if (system.loading || current.loading) {
     return <p className="text-sm text-muted">{tCommon("loading")}</p>;
