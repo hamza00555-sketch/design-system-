@@ -10,5 +10,9 @@ export const config = {
   // Everything except Next internals, files with an extension, and the API —
   // including /mcp, which is the API under another name. Locale-prefixing it
   // would redirect every agent's MCP call to /en/mcp.
-  matcher: "/((?!api|mcp|_next|_vercel|.*\\..*).*)",
+  //
+  // /__/auth is Firebase's sign-in handler, proxied here so it shares this
+  // origin. Prefixing it to /en/__/auth would break the very redirect that
+  // proxy exists to keep working.
+  matcher: "/((?!api|mcp|__|_next|_vercel|.*\\..*).*)",
 };
