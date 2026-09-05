@@ -24,13 +24,24 @@ describe("the REST surface's contract", () => {
    * could never be reached by a signed-in person. The set is the fix, so the
    * membership of the set is what is worth pinning.
    */
-  it("routes exactly the four agent paths by project key", () => {
+  it("routes exactly the agent paths by project key", () => {
     expect([...AGENT_PATHS].sort()).toEqual([
       "/api/systems/current",
       "/api/systems/push",
+      "/api/systems/screen",
       "/api/systems/screens",
       "/api/systems/verify",
     ]);
+  });
+
+  /**
+   * Listing pictures and looking at one are separate calls on purpose: the
+   * listing must stay cheap enough to fetch every time, and the bytes must
+   * never arrive unasked.
+   */
+  it("separates listing pictures from fetching one", () => {
+    expect(AGENT_PATHS.has("/api/systems/screens")).toBe(true);
+    expect(AGENT_PATHS.has("/api/systems/screen")).toBe(true);
   });
 
   it("leaves the team's own systems routes to the signed-in path", () => {

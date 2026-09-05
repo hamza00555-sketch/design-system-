@@ -34,6 +34,15 @@ generation against it before you ever see the result.
 | `list_versions` / `restore_version` | Inspect and roll back. |
 | `export_design_system` | `DESIGN.md`, W3C design-tokens JSON, or the style prompt, any time. |
 
+### Reaching the pictures
+
+Over MCP, `get_design_system` attaches the first few screenshots as images and
+`get_screen` fetches any other by name, so a vision-capable agent sees the
+product. Over plain HTTP the same is true in two calls: `GET
+/api/systems/screens` lists names and descriptions without bytes, and `POST
+/api/systems/screen` with `{"name": "..."}` returns one picture. Neither path
+pushes all of them into the prompt.
+
 ### The style prompt
 
 Exports answer "how do I take my tokens elsewhere". The style prompt answers a

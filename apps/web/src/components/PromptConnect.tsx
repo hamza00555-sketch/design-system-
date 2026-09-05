@@ -171,6 +171,15 @@ Name each after its route — "dashboard", "settings-members", "sign-in" — so
 re-running this replaces the picture rather than duplicating it. WebP around
 1200px wide, under 250 KB each, no data: prefix needed, up to 40 pictures.
 
+To read the system back later, and to look at what it already holds:
+
+POST ${base}/api/systems/current   → the tokens, components and rules as text
+GET  ${base}/api/systems/screens   → every picture's name and description, no bytes
+POST ${base}/api/systems/screen    → {"name":"dashboard"} returns that one picture
+
+Fetch a picture only when you are about to look at it. Pulling all forty into
+a prompt wastes the context you need for the work.
+
 To check a file against the system afterwards:
 POST ${base}/api/systems/verify with {"files":[{"path":"...","content":"..."}]}`;
 }

@@ -2,6 +2,7 @@ import { BRAND } from "@miswadah/core";
 import {
   addScreen,
   getDesignSystem,
+  getScreen,
   listScreensFor,
   removeScreen,
   handleMcpHttp,
@@ -97,6 +98,7 @@ export const AGENT_PATHS = new Set([
   "/api/systems/current",
   "/api/systems/push",
   "/api/systems/screens",
+  "/api/systems/screen",
   "/api/systems/verify",
 ]);
 
@@ -341,6 +343,22 @@ export async function handleApiRequest(
             mimeType: String(body.mimeType ?? ""),
             kind: body.kind === "impression" ? "impression" : "capture",
           }),
+        });
+        return;
+      }
+
+      // One picture, by name, with its bytes. Without this the plain-HTTP
+      // path could list what exists and never look at any of it, while the
+      // MCP path could — and it is the HTTP path that a pasted prompt uses.
+      if (path === "/api/systems/screen") {
+        const body = (req.body ?? {}) as Json;
+        const result = await getScreen(store, ctx, String(body.name ?? ""));
+        if (!result.image) return fail(res, 404, result.text, "not_found");
+        res.status(200).json({
+          systemId: ctx.systemId,
+          name: result.text,
+          mimeType: result.image.mimeType,
+          data: result.image.data,
         });
         return;
       }
